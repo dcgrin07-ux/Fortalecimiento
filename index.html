@@ -3,67 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EOE en RED · Espacios que acompañan trayectorias</title>
+<title>EOE en RED — Espacios que acompañan trayectorias</title>
 <style>
-
-:root{--ink:#172b4d;--muted:#61718a;--brand:#2457d6;--brand2:#168a83;--surface:#ffffff;--line:#e0e7f1;--bg:#f3f6fc;--shadow:0 8px 26px rgba(29,52,91,.08)}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:clamp(12px,3vw,28px);background:radial-gradient(ellipse at top left,#e4edff 0,transparent 42%),var(--bg);max-width:1120px;margin:auto;color:var(--ink);line-height:1.5}
-#app{width:100%}
-h1{font-size:clamp(1.55rem,3.4vw,2.35rem);letter-spacing:-.04em;line-height:1.15;margin:4px 0 8px;color:#183b78}
-h2{font-size:1.35rem;letter-spacing:-.02em;color:var(--ink)}
-h3{color:var(--ink);letter-spacing:-.015em}
-h4{color:var(--ink)}
-p{line-height:1.55}
-button{background:linear-gradient(135deg,var(--brand),#3977ed);color:#fff;border:0;padding:12px 16px;min-height:44px;width:100%;margin:5px 0;font-size:14px;font-weight:650;border-radius:12px;cursor:pointer;box-shadow:0 3px 8px rgba(36,87,214,.12);transition:transform .15s,filter .15s}
-button:hover{filter:brightness(1.04);transform:translateY(-1px)}
-button:active{transform:translateY(0)}
-.volver{background:#64748b}.config-btn{background:#263750}.add-btn{background:linear-gradient(135deg,#12866f,#21a58b)!important;font-weight:700}
-.edit-btn{background:#f0a52b;padding:7px 10px;font-size:12px;width:auto;margin:0 0 0 8px;min-height:32px}
-.del-btn{background:#c44747!important}.cat-btn{background:#12866f;text-align:left}
-.copy-btn{background:#7657c8!important}.move-btn{background:#168a83!important}
-.alumno-btn{background:#e9f8f2;color:#11634e;border:1px solid #b7e7d5;font-weight:700;text-align:left;box-shadow:none}
-.inactivo{background:#fff0f0;color:#a52b35;border:1px solid #f2c4c7;text-decoration:line-through;text-align:left;box-shadow:none}
-.ficha-box{background:var(--surface);padding:clamp(14px,2.4vw,24px);border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);margin:12px 0}
-input,textarea,select{width:100%;padding:12px 13px;margin:7px 0;border:1px solid #d4deeb;border-radius:11px;font:inherit;font-size:14px;background:#fff;color:var(--ink);outline:none;transition:border .15s,box-shadow .15s}
-input:focus,textarea:focus,select:focus{border-color:#6792f0;box-shadow:0 0 0 3px #dce8ff}
-textarea{min-height:100px;resize:vertical}
-label{font-weight:700;font-size:13px;color:#344765;display:block;margin-top:12px}
-hr{border:0;border-top:1px solid var(--line);margin:22px 0}
-.curso-linea{display:flex;align-items:center;margin-bottom:7px;gap:8px}
-.stats-box{background:linear-gradient(135deg,#e7efff,#f4f7ff);padding:18px;border-radius:16px;margin:12px 0;font-weight:700;border:1px solid #d8e4ff}
-.desc-box{background:linear-gradient(135deg,#eef5ff,#f8fbff);padding:16px;border-radius:16px;border:1px solid #d8e5fb;margin:14px 0}
-.grid-opciones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
-.grid-opciones-1{display:grid;grid-template-columns:1fr;gap:8px;margin:10px 0}
-.opcion-chip{background:#f3f6fb;color:var(--ink);border:1px solid #dbe3ef;padding:12px;border-radius:12px;text-align:center;cursor:pointer;font-weight:700;font-size:14px;margin:0;width:100%;box-shadow:none}
-.opcion-chip.seleccionado{background:#2457d6;color:#fff;border-color:#2457d6}
-.opcion-chip-nivel{background:#ecfaf7;color:#12675e;border:1px solid #bde8de;padding:12px;border-radius:12px;text-align:left;cursor:pointer;font-weight:700;font-size:13px;width:100%;box-shadow:none}
-.opcion-chip-nivel.seleccionado{background:#168a83;color:white;border-color:#168a83}
-.seccion-formulario{background:#f8faff;border:1px solid var(--line);padding:16px;border-radius:14px;margin:14px 0}
-.checklist-container{display:flex;flex-direction:column;gap:8px;margin:10px 0;background:#fff;padding:13px;border-radius:12px;border:1px solid var(--line)}
+body{font-family:Arial,sans-serif;padding:16px;background:#f4f7f6;max-width:900px;margin:auto;color:#2c3e50}
+h1,h2,h3,h4{color:#2c3e50}
+button{background:#2980b9;color:white;border:0;padding:13px;width:100%;margin:6px 0;font-size:15px;border-radius:8px;cursor:pointer}
+button:hover{opacity:.9}
+.volver{background:#7f8c8d}.config-btn{background:#34495e}.add-btn{background:#27ae60!important;font-weight:bold}
+.edit-btn{background:#f39c12;padding:5px 10px;font-size:12px;width:auto;margin:0 0 0 8px}
+.del-btn{background:#c0392b!important}
+.cat-btn{background:#27ae60;text-align:left}
+.copy-btn{background:#9b59b6!important}
+.move-btn{background:#16a085!important}
+.alumno-btn{background:#2ecc71;border:2px solid #27ae60;font-weight:bold;text-align:left}
+.inactivo{background:#e74c3c;border:2px solid #c0392b;text-decoration:line-through;text-align:left}
+.ficha-box{background:#fff;padding:18px;border-radius:10px;border:1px solid #ddd}
+input,textarea,select{width:100%;padding:11px;margin:7px 0;border:1px solid #ccc;border-radius:5px;font-size:14px}
+textarea{min-height:90px;resize:vertical}
+label{font-weight:bold;font-size:14px;color:#34495e;display:block;margin-top:10px}
+hr{border:0;border-top:1px solid #ddd;margin:18px 0}
+.curso-linea{display:flex;align-items:center;margin-bottom:5px}
+.stats-box{background:#bdc3c7;padding:15px;border-radius:8px;margin:10px 0;font-weight:bold}
+.desc-box{background:#e8f4fd;padding:14px;border-radius:10px;border:2px solid #d1e7f7;margin:12px 0}
+.grid-opciones{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.grid-opciones-1{display:grid;grid-template-columns:1fr;gap:7px;margin:8px 0}
+.opcion-chip{background:#ecf0f1;color:#2c3e50;border:2px solid #bdc3c7;padding:11px;border-radius:8px;text-align:center;cursor:pointer;font-weight:bold;font-size:14px;margin:0;width:100%}
+.opcion-chip.seleccionado{background:#2980b9;color:white;border-color:#1b4f72}
+.opcion-chip-nivel{background:#e8f8f5;color:#117a65;border:2px solid #a3e4d7;padding:11px;border-radius:8px;text-align:left;cursor:pointer;font-weight:bold;font-size:13px;width:100%}
+.opcion-chip-nivel.seleccionado{background:#1abc9c;color:white;border-color:#0e6251}
+.seccion-formulario{background:#f9f9f9;border:1px solid #e0e0e0;padding:14px;border-radius:8px;margin:14px 0}
+.checklist-container{display:flex;flex-direction:column;gap:6px;margin:8px 0;background:#fff;padding:10px;border-radius:6px;border:1px solid #ddd}
 .checklist-item{display:flex;align-items:center;gap:9px;font-size:14px;cursor:pointer}
-.checklist-item input{width:20px;height:20px;margin:0;accent-color:var(--brand)}
-.historial-tarjeta{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brand);padding:16px;margin:12px 0;border-radius:14px;box-shadow:0 5px 18px rgba(29,52,91,.05)}
-.resumen-caja{background:#f0f6ff;border:1px solid #d7e6ff;padding:16px;border-radius:14px;margin:12px 0}
-.proximo{background:linear-gradient(135deg,#fff9e8,#fffdf6);border:1px solid #f3d98d;padding:18px;border-radius:16px;margin:15px 0;box-shadow:0 6px 18px rgba(125,94,12,.08)}
-.proximo h3{margin-top:0;color:#805c00}
-.prioridad{background:white;border:1px solid #f2dfb1;border-left:4px solid #e8a629;padding:10px;margin:7px 0;border-radius:10px}
-.alerta{background:#fff0f0;border:1px solid #f2c4c7;padding:13px;border-radius:12px}
-.ok{background:#eafaf3;border:1px solid #bce8d3;padding:14px;border-radius:12px}
-.small{font-size:12px;color:var(--muted)}
-.inicio-area{border:1px solid var(--line)!important;border-radius:18px!important;padding:clamp(15px,2.5vw,22px)!important;margin:14px 0!important;background:rgba(255,255,255,.94)!important;box-shadow:var(--shadow)}
-.inicio-area h3{font-size:1.08rem;margin:0 0 7px}
-.inicio-area p{color:var(--muted)}
-.inicio-area .acciones{display:flex;flex-wrap:wrap;gap:9px}
-.inicio-area .acciones button{margin:0;flex:1 1 180px;min-height:46px}
-.inicio-secundario{margin-top:18px;border:1px solid var(--line);border-radius:16px;padding:14px 17px;background:#fff;box-shadow:var(--shadow)}
-.inicio-secundario summary{cursor:pointer;font-weight:700;padding:8px 0;color:#344765}
-.inicio-secundario .acciones{display:flex;flex-wrap:wrap;gap:8px}
-.inicio-secundario button{flex:1 1 180px;min-height:44px}
-a{color:#2457d6;font-weight:650}
-#app>hr{margin-top:24px}
-@media(max-width:640px){body{padding:12px}.grid-opciones{grid-template-columns:1fr}.curso-linea{flex-wrap:wrap}.curso-linea .edit-btn{font-size:11px;padding:6px}.inicio-area .acciones button{flex-basis:100%}button{min-height:46px}}
+.checklist-item input{width:20px;height:20px;margin:0}
+.historial-tarjeta{background:#fff;border-left:5px solid #2980b9;padding:14px;margin:10px 0;border-radius:4px;box-shadow:0 1px 3px #0002}
+.resumen-caja{background:#eaf2f8;border:1px solid #a9cce3;padding:14px;border-radius:8px;margin:12px 0}
+.proximo{background:#fff8df;border:3px solid #f1c40f;padding:17px;border-radius:12px;margin:15px 0;box-shadow:0 2px 5px #0002}
+.proximo h3{margin-top:0;color:#8a6500}
+.prioridad{background:white;border-left:4px solid #f39c12;padding:8px;margin:5px 0;border-radius:4px}
+.alerta{background:#fdecea;border:1px solid #e74c3c;padding:12px;border-radius:8px}
+.ok{background:#eafaf1;border:1px solid #27ae60;padding:12px;border-radius:8px}
+.small{font-size:12px;color:#7f8c8d}
+@media(max-width:600px){body{padding:10px}.grid-opciones{grid-template-columns:1fr}.curso-linea .edit-btn{font-size:11px;padding:5px}}
+
+/* EOE EN RED — renovación visual */
+.eoe-brand{display:flex;align-items:center;gap:13px;margin:0 0 14px}.eoe-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#2457a7,#20a58e);color:#fff;font-weight:900;font-size:1rem;letter-spacing:-.04em;box-shadow:0 6px 16px #2457a72b}.eoe-name{font-size:1.35rem;font-weight:850;letter-spacing:-.04em;color:#172b4d}.eoe-name span{color:#168879}.eoe-tagline{font-size:.82rem;color:#62738a}.eoe-divider{height:1px;background:linear-gradient(90deg,#b9cceb,transparent);margin:0 0 20px}
+:root{--ink:#172b4d;--muted:#62738a;--brand:#2457a7;--brand2:#3978d4;--teal:#138a7b;--violet:#7654b8;--surface:#fff;--line:#e1e8f2;--bg:#f3f6fb;--shadow:0 8px 26px rgba(26,48,82,.08)}
+*{box-sizing:border-box} body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;max-width:1100px;margin:0 auto;padding:24px 20px 40px;background:radial-gradient(ellipse at top left,#e6efff 0,transparent 38%),var(--bg);color:var(--ink);line-height:1.5}
+#app{min-height:80vh} h1{font-size:clamp(1.65rem,4vw,2.45rem);letter-spacing:-.04em;line-height:1.15;margin:4px 0 8px;color:#172b4d}h2{font-size:clamp(1.35rem,3vw,1.8rem);letter-spacing:-.025em;color:#172b4d;margin:8px 0 18px}h3{color:#243b5a}p{line-height:1.55} .small{color:var(--muted);font-size:.88rem}
+button{width:auto;min-height:44px;margin:5px 5px 5px 0;padding:12px 17px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 3px 8px #2457a71c;font-size:.94rem;font-weight:650;letter-spacing:.005em;transition:transform .15s,box-shadow .15s,filter .15s}button:hover{filter:brightness(1.04);box-shadow:0 7px 16px #2457a72a;transform:translateY(-1px)}button:active{transform:translateY(0)}button.volver{background:#e9eef6;color:#304762;box-shadow:none}.config-btn{background:#304762}.add-btn,.move-btn{background:linear-gradient(135deg,#0f8d79,#20aa93)!important}.edit-btn{background:#fff3d9;color:#8c5b08;border:1px solid #f3d28c;box-shadow:none}.del-btn{background:#fff0f0!important;color:#b42332!important;border:1px solid #ffd1d5;box-shadow:none}.cat-btn{background:#e9f2ff;color:#1d4e91;text-align:left;box-shadow:none}.copy-btn{background:#f1eaff!important;color:#6241a5;box-shadow:none}.alumno-btn{background:#e9f8f2;color:#176b51;border:1px solid #b6e8d4;text-align:left;box-shadow:none}.inactivo{background:#fff0f0;color:#b42332;border:1px solid #f2b8bf;text-decoration:line-through;box-shadow:none}
+input,textarea,select{width:100%;padding:13px 14px;margin:7px 0;border:1px solid #d3dce9;border-radius:12px;background:#fff;color:var(--ink);font:inherit;outline:none;box-shadow:0 1px 2px #172b4d05}input:focus,textarea:focus,select:focus{border-color:#6799e7;box-shadow:0 0 0 4px #3978d41c}textarea{min-height:110px}label{font-size:.9rem;color:#304762;font-weight:700;margin-top:12px}hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+.ficha-box,.inicio-area,.seccion-formulario,.checklist-container,.historial-tarjeta,.resumen-caja,.desc-box,.stats-box,.proximo,.alerta,.ok{border-radius:18px;box-shadow:var(--shadow);margin:14px 0;padding:18px;border:1px solid var(--line)}.ficha-box,.inicio-area,.seccion-formulario,.checklist-container,.historial-tarjeta{background:var(--surface)}.desc-box{background:linear-gradient(135deg,#edf5ff,#f7faff);border:1px solid #d8e6fb;border-left:5px solid var(--brand2)!important}.stats-box{background:linear-gradient(135deg,#e9f1ff,#f5f8ff);color:#23436f}.resumen-caja{background:#f0f7ff;border-color:#d5e6fb}.proximo{background:#fff9e9;border:1px solid #f2d88e;border-left:5px solid #e5ad25}.proximo h3{color:#805c09}.alerta{background:#fff1f1;border-color:#ffd2d2;color:#8d2630}.ok{background:#eaf8f1;border-color:#c4ead6;color:#176345}.prioridad{background:#fff;border-left:4px solid #e7ae35;padding:10px 12px;margin:7px 0;border-radius:8px}.curso-linea{display:flex;align-items:center;gap:8px;margin-bottom:8px}.grid-opciones{gap:12px;margin:12px 0}.grid-opciones-1{gap:10px}.opcion-chip{background:#f4f7fb;color:#304762;border:1px solid #dbe4ef;border-radius:12px;padding:13px}.opcion-chip.seleccionado{background:var(--brand);border-color:var(--brand);color:#fff}.opcion-chip-nivel{background:#eef8f6;color:#176b5b;border:1px solid #c6e8e0;border-radius:12px}.opcion-chip-nivel.seleccionado{background:var(--teal);color:white;border-color:var(--teal)}.checklist-container{gap:10px}.checklist-item{padding:8px;border-radius:9px}.inicio-area h3{font-size:1.08rem;letter-spacing:-.015em;margin:0 0 6px}.inicio-area p{color:var(--muted)}.inicio-area .acciones{gap:10px}.inicio-area .acciones button{flex:1 1 190px;min-height:52px}.inicio-secundario{margin-top:22px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px}.inicio-secundario summary{cursor:pointer;font-weight:750;color:#304762;padding:8px 0}.inicio-secundario button{min-height:46px}
+#app>h1:first-child{padding:6px 0 0}#app>h1:first-child+p{margin-top:0;margin-bottom:18px}#app a{color:#2457a7;text-underline-offset:3px} .historial-tarjeta{border-left:4px solid #3978d4} .ficha-box h3{margin-top:4px}
+@media(min-width:760px){body{padding:32px 30px 50px}.grid-opciones{grid-template-columns:repeat(2,minmax(0,1fr))}.inicio-area{padding:22px}.desc-box{padding:22px}}
+@media(max-width:600px){body{padding:14px 12px 30px}.grid-opciones{grid-template-columns:1fr}button{max-width:100%;padding:11px 13px}.inicio-area{padding:15px}.curso-linea{align-items:stretch;flex-wrap:wrap}.curso-linea>*{max-width:100%}}
 
 </style>
   <link rel="manifest" href="manifest.webmanifest">
@@ -85,7 +78,6 @@ a{color:#2457d6;font-weight:650}
    - "Próximo encuentro" visible al abrir cada alumno.
    - Mover alumno conserva ID e historial.
    - Backup JSON compatible.
-   - Interfaz visual EOE en RED, diseño responsive actualizado.
 ========================================================= */
 
 const STORAGE_KEY = "datos_sistema_v8";
@@ -570,8 +562,7 @@ function mostrarInicio(){
   const instituciones=db.instituciones||[];
   const activa=instituciones.find(i=>i.id===db.institucionActivaId);
   document.getElementById("app").innerHTML=`
-    <div style="display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:14px 16px;background:linear-gradient(120deg,#173d82,#2868d9 70%,#168a83);border-radius:18px;color:#fff;box-shadow:0 10px 25px #1d3f7b22"><div style="font-size:30px">✦</div><div><div style="font-size:12px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;opacity:.85">Plataforma para equipos de orientación</div><div style="font-size:clamp(20px,4vw,28px);font-weight:850;letter-spacing:-.04em;line-height:1.2">EOE en RED</div><div style="font-size:12px;opacity:.88">Espacios que acompañan trayectorias</div></div></div>
-    <h1>🏫 ${esc(db.nombreEscuela)}</h1>
+    <div class="eoe-brand"><div class="eoe-mark">ER</div><div><div class="eoe-name">EOE <span>en RED</span></div><div class="eoe-tagline">Espacios que acompañan trayectorias</div></div></div><div class="eoe-divider"></div><h1>🏫 ${esc(db.nombreEscuela)}</h1>
     <p class="small">${nivelIcono(db.nivelInstitucion)} Nivel ${esc(db.nivelInstitucion)} · ${db.nivelInstitucion==="Primario"?"Fortalecimiento · Seguimiento de Trayectorias":"Seguimiento de Trayectorias · Nivel "+esc(db.nivelInstitucion)}</p>
     <div class="desc-box" style="border-left:5px solid #2980b9">
       <b>🏫 INSTITUCIÓN ACTIVA</b>
