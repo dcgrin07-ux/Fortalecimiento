@@ -58,15 +58,47 @@ input,textarea,select{width:100%;padding:13px 14px;margin:7px 0;border:1px solid
 @media(min-width:760px){body{padding:32px 30px 50px}.grid-opciones{grid-template-columns:repeat(2,minmax(0,1fr))}.inicio-area{padding:22px}.desc-box{padding:22px}}
 @media(max-width:600px){body{padding:14px 12px 30px}.grid-opciones{grid-template-columns:1fr}button{max-width:100%;padding:11px 13px}.inicio-area{padding:15px}.curso-linea{align-items:stretch;flex-wrap:wrap}.curso-linea>*{max-width:100%}}
 
+
+/* EOE EN RED — identidad visual renovada */
+:root{--navy:#172d4b;--ink:#26384c;--muted:#69798b;--paper:#f4f7fb;--line:#e2e9f2;--blue:#3978d4;--mint:#1f9b86;--violet:#8064c9}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(135deg,#f2f6fc 0%,#f7f8fc 45%,#eef7f5 100%);color:var(--ink);max-width:1120px;padding:clamp(12px,3vw,30px)}
+button,input,textarea,select{font-family:inherit}button{transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;border-radius:12px}button:hover{opacity:1;filter:brightness(1.02);transform:translateY(-1px);box-shadow:0 6px 16px #203b5c16}
+.portal-wrap{max-width:1040px;margin:0 auto}.portal-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:5px 0 24px;border-bottom:1px solid #dce5ef}.portal-brand{display:flex;align-items:center;gap:12px}.portal-logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,#2d7cdb,#1a9e91);color:white;font-size:18px;font-weight:900;letter-spacing:-1px;box-shadow:0 8px 18px #2d7cdb32}.portal-name{font-size:23px;font-weight:850;letter-spacing:-.8px;color:#18314f}.portal-name span{color:#3982d5}.portal-sub{font-size:12px;color:#718198;margin-top:2px}.portal-user{font-size:12px;color:#5e7186;background:#fff;border:1px solid var(--line);padding:9px 12px;border-radius:99px}.status-dot{display:inline-block;width:7px;height:7px;background:#d59b36;border-radius:50%;margin-right:6px}.portal-hero{position:relative;overflow:hidden;margin:24px 0 30px;padding:clamp(24px,5vw,46px);border-radius:26px;background:linear-gradient(115deg,#183454 0%,#245d86 55%,#2d8b89 100%);color:white;box-shadow:0 16px 34px #234b6b20}.portal-hero h1{font-size:clamp(28px,5vw,43px);line-height:1.13;letter-spacing:-1.5px;color:#fff;margin:12px 0}.portal-hero h1 span{color:#a8e8df}.portal-hero p{font-size:15px;line-height:1.7;color:#e0ebf6;max-width:610px;margin-bottom:0}.eyebrow{font-size:10px;font-weight:850;letter-spacing:1.7px;color:#7193b4}.portal-hero .eyebrow{color:#a8c9e5}.hero-symbol{position:absolute;right:6%;top:2%;font-size:clamp(100px,19vw,210px);line-height:1;color:#ffffff0c;font-weight:900;pointer-events:none}.portal-section-title{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:16px}.portal-section-title h2{margin:0;color:#1e3551;font-size:22px;letter-spacing:-.6px}.portal-section-title p{margin:5px 0 0;color:var(--muted);font-size:13px}.portal-mini-tag{border:1px solid #d7e4f1;color:#64809e;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:1px}.portal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.portal-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:230px;padding:23px;background:#fff;border:1px solid #e2eaf3;border-radius:20px;color:var(--ink);box-shadow:0 5px 16px #1c3b5c08;width:100%;margin:0}.portal-card .card-icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:25px;margin-bottom:18px}.card-kicker{font-size:9px;letter-spacing:1.5px;font-weight:850;color:#8291a3;margin-bottom:6px}.portal-card strong{font-size:19px;letter-spacing:-.4px;color:#213a58}.card-desc{font-size:13px;line-height:1.6;color:#718096;margin-top:8px;max-width:390px;font-weight:400}.card-link{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto;padding-top:19px;font-size:12px;font-weight:800;color:#3a77b9}.card-link b{font-size:17px}.card-personal .card-icon{background:#e9efff;color:#4e69bd}.card-instituciones .card-icon{background:#e3f6ef;color:#1b927c}.card-biblioteca .card-icon{background:#f0eaff;color:#8263bf}.card-trayectorias .card-icon{background:#e3f2ff;color:#2878c5}.card-equipo .card-icon{background:#fff0e3;color:#b87532}.card-informes .card-icon{background:#e4f5f5;color:#288f96}.portal-bottom{display:flex;gap:14px;align-items:flex-start;margin-top:24px;padding:18px 20px;background:#eaf5f2;border:1px solid #d0e9e1;border-radius:16px}.bottom-mark{flex:0 0 28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#d3eee4;color:#1b8c73;font-weight:900}.portal-bottom strong{font-size:13px;color:#245b51}.portal-bottom p{font-size:12px;line-height:1.55;color:#577b75;margin:5px 0 0}.portal-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:22px 0 5px;color:#8492a2;font-size:11px}.portal-footer span:first-child{font-weight:900;letter-spacing:.5px;color:#62758a}.portal-footer button{width:auto;margin:0;padding:8px 12px;font-size:11px;background:#fff;color:#526d8c;border:1px solid #dce6f0}.portal-subpage{max-width:900px;margin:0 auto}.portal-back{width:auto;background:#fff;color:#526e8b;border:1px solid var(--line);padding:10px 14px;margin:0 0 24px}.subpage-heading{display:flex;gap:16px;align-items:center;margin-bottom:24px}.subpage-heading h1{margin:4px 0;color:#203853;font-size:clamp(28px,5vw,36px);letter-spacing:-1px}.subpage-heading p{margin:4px 0;color:#75859a;font-size:14px}.subpage-icon{flex:0 0 60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:30px}.personal-icon{background:#e9efff;color:#4e69bd}.institution-icon{background:#e3f6ef;color:#1b927c}.admin-icon{background:#fff0e3;color:#b87532}.personal-editor{padding:24px;background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px #18345409}.personal-editor label{color:#526b84;font-size:12px}.personal-editor input,.personal-editor textarea{border:1px solid #dbe4ef;background:#fbfcfe;padding:13px;border-radius:10px}.primary-action,.secondary-action{width:auto;min-width:170px;padding:12px 17px;margin:12px 0 0;background:linear-gradient(110deg,#347bd1,#238e9a);font-weight:750}.secondary-action{background:#fff;color:#456889;border:1px solid #dce6ef}.subpage-list-title{display:flex;align-items:center;gap:10px;font-size:18px;margin:28px 0 12px}.subpage-list-title span{font-size:12px;background:#e4edf7;color:#57799c;border-radius:20px;padding:4px 8px}.personal-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.note-card,.institution-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.note-date{font-size:11px;color:#8b99a8}.note-card h3{font-size:16px;margin:8px 0;color:#28445f;overflow-wrap:anywhere}.note-card p{font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;color:#63768b}.note-delete{width:auto;padding:7px 11px;background:#fff1f0;border:1px solid #f4d8d5;color:#b84c45;font-size:11px}.empty-state{padding:28px;text-align:center;background:#fff;border:1px dashed #d5e0ec;border-radius:16px;color:#7a8b9d;font-size:13px;grid-column:1/-1}.local-warning{font-size:12px;line-height:1.6;color:#8b7442;background:#fff8e8;border:1px solid #f1e4c3;padding:13px 15px;border-radius:12px;margin-top:20px}.institution-list{display:grid;gap:12px}.institution-card{display:flex;align-items:center;gap:14px}.institution-symbol{flex:0 0 46px;height:46px;border-radius:14px;background:#e3f6ef;color:#1b927c;display:grid;place-items:center;font-size:24px}.institution-info{flex:1;min-width:0}.institution-info h3{margin:0;color:#253f5b;font-size:16px}.institution-info p{margin:4px 0;color:#71849a;font-size:12px}.institution-info span{font-size:10px;color:#b0823f}.institution-card .primary-action{min-width:0;white-space:nowrap;font-size:12px;margin:0;padding:10px 12px}.admin-summary{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 14px;padding:20px;background:#fff;border:1px solid var(--line);border-radius:16px;margin-bottom:16px}.admin-summary strong{font-size:24px;color:#3679bb}.admin-summary span{font-size:13px;color:#70839a}
+/* Botón universal de regreso: amarillo, circular y siempre visible en las pantallas internas */
+#eoe-back-floating{position:fixed;z-index:9999;left:18px;bottom:22px;width:62px;height:62px;min-width:62px;padding:0;margin:0;border:3px solid #fff;border-radius:50%;background:linear-gradient(145deg,#ffe56a,#ffc928);color:#26364a;box-shadow:0 7px 22px #172f4b35;display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;font-size:25px;font-weight:900;line-height:1;letter-spacing:0;}
+#eoe-back-floating span{font-size:9px;font-weight:900;letter-spacing:.4px;margin-top:2px}
+#eoe-back-floating:active{transform:scale(.96)}
+@media(min-width:760px){#eoe-back-floating{left:24px;bottom:24px;width:68px;height:68px;min-width:68px}}
+@media(min-width:760px){.portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.portal-card{min-height:255px}.portal-hero{margin-top:30px}}
+@media(max-width:520px){.portal-header{align-items:flex-start}.portal-user{font-size:10px;padding:7px 9px}.portal-logo{width:42px;height:42px}.portal-name{font-size:20px}.portal-sub{font-size:10px}.portal-grid,.personal-notes{grid-template-columns:1fr}.portal-card{min-height:205px;padding:20px}.portal-hero{border-radius:20px}.institution-card{align-items:flex-start;flex-wrap:wrap}.institution-info{flex:1 1 calc(100% - 65px)}.institution-card .primary-action{margin-left:60px}.portal-footer{align-items:flex-start;flex-direction:column}}
+
+
+/* Ajustes de la propuesta: contexto institucional claro y calendario personal, sin cambiar la identidad visual. */
+.card-instituciones-principal{border:2px solid #c6e9dd;box-shadow:0 12px 28px #1b927c16;transform:translateY(-2px)}
+.active-institution-banner{display:flex;flex-direction:column;gap:5px;padding:20px 22px;margin:0 0 18px;border-radius:18px;background:linear-gradient(115deg,#e2f6ee,#f5fbf8);border:2px solid #bfe6d7;box-shadow:0 8px 22px #1b927c12}
+.active-institution-label{font-size:10px;font-weight:900;letter-spacing:1.3px;color:#1b927c}.active-institution-banner strong{font-size:clamp(21px,4vw,28px);color:#203853}.active-institution-banner>span:last-child{font-size:12px;color:#668778}
+.personal-calendar{margin:0 0 24px;padding:22px;background:#f7f9ff;border:1px solid #dfe7f5;border-radius:20px}.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}.calendar-heading h2{margin:4px 0;color:#203853;font-size:22px}.calendar-heading p{margin:4px 0;color:#75859a;font-size:13px}.calendar-symbol{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:#e9efff;color:#4e69bd;font-size:27px}.calendar-form{display:grid;grid-template-columns:1fr;gap:8px;padding:16px;background:white;border:1px solid #e3e9f3;border-radius:14px}.calendar-form label{font-size:12px;color:#526b84}.calendar-form input{width:100%;box-sizing:border-box;border:1px solid #dbe4ef;background:#fbfcfe;padding:12px;border-radius:10px;font:inherit;color:#263e57}.calendar-form .primary-action{justify-self:start}.personal-calendar .subpage-list-title{margin-top:22px}
+
 </style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2f7d5b">
   <meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+
+<style id="eoe-contexto-institucional-css">
+.eoe-contexto-activo{position:sticky;top:8px;z-index:1000;display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:12px 16px;border:1px solid #b8dfd2;border-left:5px solid #27977f;border-radius:16px;background:linear-gradient(120deg,#e7f7f1,#f5fbff);box-shadow:0 8px 24px rgba(34,67,83,.09);color:#243b4c}
+.eoe-contexto-activo .eoe-contexto-icono{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#d2eee4;display:grid;place-items:center;font-size:22px}
+.eoe-contexto-activo .eoe-contexto-datos{min-width:0;flex:1}.eoe-contexto-activo small{display:block;font-size:10px;font-weight:800;letter-spacing:1.1px;color:#277b69;margin-bottom:3px}.eoe-contexto-activo strong{display:block;font-size:16px;line-height:1.25}.eoe-contexto-activo span{font-size:12px;color:#607581}
+.eoe-contexto-activo button{border:0;border-radius:999px;background:#ffd64a;color:#443600;font-weight:800;padding:10px 13px;box-shadow:0 3px 0 #d4ad22;cursor:pointer;white-space:nowrap}
+.eoe-contexto-activo button:active{transform:translateY(2px);box-shadow:0 1px 0 #d4ad22}
+@media(max-width:520px){.eoe-contexto-activo{gap:8px;padding:10px}.eoe-contexto-activo .eoe-contexto-icono{width:36px;height:36px;flex-basis:36px}.eoe-contexto-activo button{font-size:12px;padding:9px 10px}.eoe-contexto-activo strong{font-size:14px}}
+</style>
+
 </head>
 <body>
 <div id="app"></div>
+<button id="eoe-back-floating" type="button" aria-label="Volver a la pantalla anterior" title="Volver a la pantalla anterior" onclick="volverPantallaAnteriorEOE()">←<span>VOLVER</span></button>
 
 <script>
 /* =========================================================
@@ -558,7 +590,7 @@ function renderPendientesInicio(){
   return `<div class="inicio-area" style="border-left:5px solid #f1c40f;background:#fffdf4"><h3>🎯 Pendientes para el próximo encuentro</h3><p>Este panel recupera objetivos guardados y orientaciones del último registro. Las sugerencias son editables y no reemplazan el criterio profesional.</p>${tarjetas}</div>`;
 }
 
-function mostrarInicio(){
+function mostrarInicioSeguimiento(){
   const instituciones=db.instituciones||[];
   const activa=instituciones.find(i=>i.id===db.institucionActivaId);
   document.getElementById("app").innerHTML=`
@@ -625,6 +657,60 @@ function mostrarInicio(){
     <div class="ok"><b>🔒 Datos separados por institución:</b> estás trabajando actualmente en <b>${esc(db.nombreEscuela)}</b>.</div>
   `;
 }
+
+/* =========================================================
+   PORTAL EOE EN RED — NUEVA PORTADA Y ESPACIOS DE TRABAJO
+   Los módulos de seguimiento y biblioteca existentes se conservan.
+   Esta versión todavía guarda notas y configuración localmente.
+========================================================= */
+const EOE_PERSONAL_KEY = "eoe_red_espacio_personal_v1";
+const EOE_PORTAL_KEY = "eoe_red_portal_config_v1";
+function leerPersonalEOE(){try{const d=JSON.parse(localStorage.getItem(EOE_PERSONAL_KEY)||'{"notas":[],"borradores":[],"eventos":[]}');if(!Array.isArray(d.notas))d.notas=[];if(!Array.isArray(d.eventos))d.eventos=[];return d}catch(e){return {notas:[],borradores:[],eventos:[]}}}
+function guardarPersonalEOE(d){try{localStorage.setItem(EOE_PERSONAL_KEY,JSON.stringify(d));return true}catch(e){alert('No se pudo guardar en este dispositivo.');return false}}
+function leerPortalEOE(){try{return JSON.parse(localStorage.getItem(EOE_PORTAL_KEY)||'{"nombre":"Mi espacio","instituciones":[]}')}catch(e){return {nombre:'Mi espacio',instituciones:[]}}}
+function guardarPortalEOE(d){try{localStorage.setItem(EOE_PORTAL_KEY,JSON.stringify(d));return true}catch(e){return false}}
+function mostrarInicio(){
+ const portal=leerPortalEOE();
+ const insts=Array.isArray(db.instituciones)?db.instituciones:[];
+ const totalAlumnos=insts.reduce((n,i)=>n+((i.listaAlumnos||[]).filter(a=>a.activo!==false).length),0);
+ document.getElementById('app').innerHTML=`
+ <div class="portal-wrap">
+  <header class="portal-header"><div class="portal-brand"><div class="portal-logo">ER</div><div><div class="portal-name">EOE <span>en RED</span></div><div class="portal-sub">Espacios que acompañan trayectorias</div></div></div><div class="portal-user"><span class="status-dot"></span> Espacio de trabajo local</div></header>
+  <section class="portal-hero"><div><div class="eyebrow">PLATAFORMA DE TRABAJO EDUCATIVO</div><h1>Un espacio para acompañar,<br><span>registrar y construir en red.</span></h1><p>Organizá tus materiales, tus escritos y el trabajo de cada institución desde un mismo lugar.</p></div><div class="hero-symbol">✳</div></section>
+  <div class="portal-section-title"><div><h2>¿Dónde querés trabajar?</h2><p>Elegí un espacio para continuar.</p></div><span class="portal-mini-tag">EOE · RED</span></div>
+  <section class="portal-grid">
+   <button class="portal-card card-personal" onclick="mostrarEspacioPersonalEOE()"><span class="card-icon">✎</span><span class="card-kicker">PRIVADO</span><strong>Mi espacio personal</strong><span class="card-desc">Notas, calendario, ideas, escritos y borradores privados.</span><span class="card-link">Entrar al espacio <b>↗</b></span></button>
+   <button class="portal-card card-instituciones card-instituciones-principal" onclick="mostrarInstitucionesEOE()"><span class="card-icon">⌂</span><span class="card-kicker">TU ESPACIO DE TRABAJO</span><strong>Mis instituciones</strong><span class="card-desc">Elegí una escuela. La institución activa identificará el contexto de trabajo y sus trayectorias.</span><span class="card-link">Elegir institución <b>↗</b></span></button>
+   <button class="portal-card card-biblioteca" onclick="mostrarGuiaRecursos()"><span class="card-icon">▤</span><span class="card-kicker">RECURSOS</span><strong>Biblioteca de materiales</strong><span class="card-desc">Recursos y estrategias organizados por Inicial, Primario, Secundario y compartidos.</span><span class="card-link">Abrir biblioteca <b>↗</b></span></button>
+   <button class="portal-card card-trayectorias" onclick="abrirTrayectoriasInstitucionActivaEOE()"><span class="card-icon">◎</span><span class="card-kicker">SEGUIMIENTO</span><strong>Trayectorias educativas</strong><span class="card-desc">Acceso directo a cursos, alumnos, intervenciones e historiales de la institución activa.</span><span class="card-link">Abrir seguimiento <b>↗</b></span></button>
+   <button class="portal-card card-equipo" onclick="mostrarAdministracionEOE()"><span class="card-icon">♧</span><span class="card-kicker">ORGANIZACIÓN</span><strong>Gestión institucional</strong><span class="card-desc">Administrá localmente las instituciones que querés tener visibles en el portal.</span><span class="card-link">Gestionar espacios <b>↗</b></span></button>
+   <button class="portal-card card-informes" onclick="mostrarEstadisticas()"><span class="card-icon">▥</span><span class="card-kicker">INFORMACIÓN</span><strong>Estadísticas e informes</strong><span class="card-desc">Consultá los datos que ya registra el módulo de trayectorias.</span><span class="card-link">Ver estadísticas <b>↗</b></span></button>
+  </section>
+  <section class="portal-bottom"><div class="bottom-mark">i</div><div><strong>Tu trabajo, organizado en un solo lugar.</strong><p>Los datos de seguimiento y los nuevos espacios personales de esta versión se guardan localmente en el dispositivo. La sincronización entre usuarios mediante Firebase todavía requiere integración y reglas de seguridad.</p></div></section>
+  <footer class="portal-footer"><span>EOE en RED</span><span>Versión de trabajo · No sincronizada</span><button onclick="descargarBackup()">Descargar copia de seguridad ↗</button></footer>
+ </div>`;
+}
+function mostrarEspacioPersonalEOE(){
+ const d=leerPersonalEOE();
+ document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon personal-icon">✎</div><div><div class="eyebrow">ESPACIO PRIVADO</div><h1>Mi espacio personal</h1><p>Un lugar para guardar ideas, notas y borradores de trabajo.</p></div></div><section class="personal-calendar"><div class="calendar-heading"><div><div class="eyebrow">ORGANIZACIÓN PERSONAL</div><h2>Mi calendario</h2><p>Agendá reuniones, actividades y recordatorios privados.</p></div><span class="calendar-symbol">▦</span></div><div class="calendar-form"><label for="eoe-evento-fecha">Fecha</label><input id="eoe-evento-fecha" type="date"><label for="eoe-evento-titulo">Actividad</label><input id="eoe-evento-titulo" placeholder="Ej. Reunión de equipo"><label for="eoe-evento-detalle">Detalle (opcional)</label><input id="eoe-evento-detalle" placeholder="Horario, lugar o recordatorio"><button class="primary-action" onclick="guardarEventoPersonalEOE()">＋ Agendar actividad</button></div><h3 class="subpage-list-title">Próximas actividades <span>${(d.eventos||[]).length}</span></h3><div class="personal-notes">${(d.eventos||[]).slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(ev=>`<article class="note-card"><div class="note-date">${esc(ev.fecha||'Sin fecha')}</div><h3>${esc(ev.titulo||'Actividad')}</h3><p>${esc(ev.detalle||'')}</p><button class="note-delete" onclick="eliminarEventoPersonalEOE('${String(ev.id).replace(/'/g,"\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no tenés actividades agendadas.</div>'}</div><p class="local-warning">El calendario es personal y local en este dispositivo. Todavía no sincroniza con otras cuentas ni envía notificaciones.</p></section><div class="personal-editor"><h2>Notas y borradores</h2><label for="eoe-nota-titulo">Título</label><input id="eoe-nota-titulo" placeholder="Ej. Ideas para la reunión de equipo"><label for="eoe-nota-texto">Nota o borrador</label><textarea id="eoe-nota-texto" rows="6" placeholder="Escribí acá tus ideas, acuerdos, recordatorios o un borrador..."></textarea><button class="primary-action" onclick="guardarNotaPersonalEOE()">＋ Guardar nota</button></div><h2 class="subpage-list-title">Mis notas guardadas <span>${d.notas.length}</span></h2><div class="personal-notes">${d.notas.slice().reverse().map(n=>`<article class="note-card"><div class="note-date">${esc(n.fecha||'Sin fecha')}</div><h3>${esc(n.titulo||'Nota sin título')}</h3><p>${esc(n.texto||'')}</p><button class="note-delete" onclick="eliminarNotaPersonalEOE('${String(n.id).replace(/'/g,"\\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no guardaste notas. Podés empezar con una idea o un borrador.</div>'}</div><p class="local-warning">🔒 Estas notas se guardan en este navegador. Todavía no están sincronizadas con una cuenta ni con otros dispositivos.</p></div>`;
+}
+function guardarEventoPersonalEOE(){const fecha=document.getElementById('eoe-evento-fecha').value,titulo=document.getElementById('eoe-evento-titulo').value.trim(),detalle=document.getElementById('eoe-evento-detalle').value.trim();if(!fecha||!titulo){alert('Elegí una fecha y escribí el nombre de la actividad.');return}const d=leerPersonalEOE();d.eventos.push({id:crearId(),fecha,titulo,detalle});if(guardarPersonalEOE(d))mostrarEspacioPersonalEOE()}
+function eliminarEventoPersonalEOE(id){if(!confirm('¿Eliminar esta actividad del calendario?'))return;const d=leerPersonalEOE();d.eventos=(d.eventos||[]).filter(e=>String(e.id)!==String(id));guardarPersonalEOE(d);mostrarEspacioPersonalEOE()}
+function abrirTrayectoriasInstitucionActivaEOE(){const id=db.institucionActivaId;if(id){mostrarInicioSeguimiento();return}mostrarInstitucionesEOE();alert('Primero elegí una institución. Desde su ficha podés entrar a sus trayectorias.');}
+function guardarNotaPersonalEOE(){const titulo=document.getElementById('eoe-nota-titulo').value.trim(),texto=document.getElementById('eoe-nota-texto').value.trim();if(!titulo&&!texto){alert('Escribí un título o el contenido de la nota.');return}const d=leerPersonalEOE();d.notas.push({id:crearId(),titulo:titulo||'Nota sin título',texto,fecha:new Date().toLocaleDateString('es-AR')});if(guardarPersonalEOE(d))mostrarEspacioPersonalEOE()}
+function eliminarNotaPersonalEOE(id){if(!confirm('¿Eliminar esta nota personal?'))return;const d=leerPersonalEOE();d.notas=d.notas.filter(n=>String(n.id)!==String(id));guardarPersonalEOE(d);mostrarEspacioPersonalEOE()}
+function mostrarInstitucionesEOE(){
+ const insts=Array.isArray(db.instituciones)?db.instituciones:[];
+ document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon institution-icon">⌂</div><div><div class="eyebrow">ESPACIOS DE TRABAJO</div><h1>Mis instituciones</h1><p>Elegí una institución. Una vez seleccionada, será el contexto de trabajo para sus cursos, alumnos e historiales.</p></div></div>${db.institucionActivaId&&insts.some(x=>String(x.id)===String(db.institucionActivaId))?`<div class="active-institution-banner"><span class="active-institution-label">INSTITUCIÓN ACTIVA</span><strong>${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nombreEscuela)}</strong><span>Nivel ${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nivelInstitucion)}</span></div>`:''}<div class="institution-list">${insts.map(i=>`<article class="institution-card"><div class="institution-symbol">⌂</div><div class="institution-info"><h3>${esc(i.nombreEscuela)}</h3><p>Nivel ${esc(i.nivelInstitucion)}</p><span>Espacio registrado en este dispositivo</span></div><button class="primary-action" onclick="seleccionarInstitucionPortalEOE('${String(i.id).replace(/'/g,"\'")}')">${String(i.id)===String(db.institucionActivaId)?'Institución activa ✓':'Elegir institución →'}</button></article>`).join('')||'<div class="empty-state">Todavía no hay instituciones registradas. Podés agregar una desde la configuración del módulo de seguimiento.</div>'}</div><p class="local-warning">Primero elegís la institución; desde su ficha entrás a las trayectorias. La gestión compartida de integrantes y permisos requiere Firebase.</p></div>`
+}
+function seleccionarInstitucionPortalEOE(id){cargarInstitucion(id);mostrarInstitucionesEOE();}
+function verInstitucionEOE(id){
+ const inst=(db.instituciones||[]).find(x=>String(x.id)===String(id));
+ if(!inst){alert('No se encontró esa institución.');mostrarInstitucionesEOE();return}
+ const alumnos=Array.isArray(inst.listaAlumnos)?inst.listaAlumnos.length:0;
+ document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInstitucionesEOE()">← Volver a instituciones</button><div class="subpage-heading"><div class="subpage-icon institution-icon">⌂</div><div><div class="eyebrow">ESPACIO INSTITUCIONAL</div><h1>${esc(inst.nombreEscuela)}</h1><p>Nivel ${esc(inst.nivelInstitucion)} · espacio de trabajo local</p></div></div><div class="admin-summary"><strong>${alumnos}</strong><span>alumnos registrados</span></div><div class="institution-card"><div class="institution-info"><h3>Trayectorias educativas</h3><p>Cursos, alumnos, intervenciones, historiales y próximos encuentros de esta institución.</p></div><button class="primary-action" onclick="cargarInstitucion('${String(inst.id).replace(/'/g,"\'")}');mostrarInicioSeguimiento()">Entrar a trayectorias →</button></div><p class="local-warning">Los registros pertenecen a esta institución en este dispositivo. La sincronización entre integrantes todavía requiere la integración de Firebase.</p></div>`
+}
+function mostrarAdministracionEOE(){const insts=db.instituciones||[];document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon admin-icon">♧</div><div><div class="eyebrow">CONFIGURACIÓN</div><h1>Gestión institucional</h1><p>Administración local de los espacios registrados en esta instalación.</p></div></div><div class="admin-summary"><strong>${insts.length}</strong><span>instituciones registradas</span><strong>${insts.reduce((n,i)=>n+((i.listaAlumnos||[]).length),0)}</strong><span>alumnos registrados en los historiales</span></div><div class="institution-list">${insts.map(i=>`<article class="institution-card"><div class="institution-symbol">⌂</div><div class="institution-info"><h3>${esc(i.nombreEscuela)}</h3><p>Nivel ${esc(i.nivelInstitucion)}</p></div><button class="primary-action" onclick="cargarInstitucion('${String(i.id).replace(/'/g,"\\'")}');mostrarInicioSeguimiento()">Configurar →</button></article>`).join('')}</div><button class="secondary-action" onclick="mostrarInicioSeguimiento()">Abrir configuración completa de instituciones</button><p class="local-warning">Esta pantalla no crea cuentas ni permisos reales. No habilites datos compartidos hasta conectar Firebase y probar las reglas de acceso.</p></div>`}
 
 /* ================= GUÍA DE TRABAJO Y RECURSOS =================
    Los recursos se guardan aparte de los datos de alumnos.
@@ -1942,6 +2028,45 @@ function consultarRecursosBiblioteca(){
  box.innerHTML=`<div class="ok"><b>Recursos relacionados con tu consulta</b><p>Encontré coincidencias en la biblioteca de ${esc(nivel)}. La búsqueda puede incluir texto extraído de los documentos, pero sigue siendo local por palabras clave y no una respuesta generada por IA.</p>${scored.map(({r,hits})=>`<div class="ficha-box"><b>${esc(r.titulo)}</b><p>${esc(r.descripcion||"")}</p><p class="small"><b>Tipo:</b> ${esc(r.tipo||"No especificado")} · <b>Nivel:</b> ${esc(r.nivel||"Primario")}<br><b>Fuente:</b> ${esc(r.fuente||"No especificada")} ${r.nombreArchivo?`<br><b>Archivo leído:</b> ${esc(r.nombreArchivo)}`:""}<br><b>Página/apartado:</b> ${esc(r.pagina||"No especificado")}<br><b>Coincidencias:</b> ${esc(hits.join(", "))}${r.enlace?`<br><a href="${esc(r.enlace)}" target="_blank" rel="noopener">Abrir documento o enlace</a>`:""}</p></div>`).join("")}<p><b>Próximo paso:</b> cuando conectemos el servicio de IA, estos recursos serán el punto de partida para generar respuestas fundamentadas y citar sus fuentes.</p></div>`;
 }
 
+
+/* Navegación universal: guarda pantallas anteriores al interactuar y permite regresar sin cambiar el diseño existente. */
+(function(){
+ const app=document.getElementById('app');
+ const back=document.getElementById('eoe-back-floating');
+ const stack=[]; let restoring=false; let lastHTML='';
+ function isPortal(html){return /class="portal-wrap"/.test(html||'');}
+ function refresh(){
+   if(!back||!app)return;
+   const current=app.innerHTML;
+   back.style.display=(!isPortal(current)&&current.trim()!=='')?'flex':'none';
+ }
+ document.addEventListener('click',function(ev){
+   if(restoring||!app)return;
+   const control=ev.target.closest('button,a,[role="button"]');
+   if(!control||control.id==='eoe-back-floating')return;
+   const current=app.innerHTML;
+   if(current&&current!==lastHTML){lastHTML=current;}
+   if(current&&!stack.length || current && stack[stack.length-1]!==current){
+     stack.push(current);
+     if(stack.length>35)stack.shift();
+   }
+ },true);
+ const observer=new MutationObserver(function(){
+   if(restoring)return;
+   const current=app.innerHTML;
+   refresh();
+   lastHTML=current;
+ });
+ observer.observe(app,{childList:true,subtree:true,characterData:true});
+ window.volverPantallaAnteriorEOE=function(){
+   if(!app)return;
+   let previous=null;
+   while(stack.length){const candidate=stack.pop();if(candidate&&candidate!==app.innerHTML){previous=candidate;break;}}
+   if(previous!==null){restoring=true;app.innerHTML=previous;lastHTML=previous;refresh();setTimeout(()=>{restoring=false;},0);}
+   else {mostrarInicio();}
+ };
+ refresh();
+})();
 mostrarInicio();
 </script>
 <script>
@@ -1951,5 +2076,76 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<script id="eoe-contexto-institucional-script">
+(function(){
+ const app=document.getElementById('app'); if(!app)return;
+ function agregarContextoInstitucional(){
+   const viejo=app.querySelector('.eoe-contexto-activo'); if(viejo)viejo.remove();
+   const contenido=app.firstElementChild; if(!contenido)return;
+   // La portada y el espacio personal permanecen independientes del contexto institucional.
+   if(contenido.classList.contains('portal-wrap'))return;
+   if(contenido.querySelector && contenido.querySelector('.personal-calendar'))return;
+   if(typeof db==='undefined'||!db||!Array.isArray(db.instituciones))return;
+   const inst=db.instituciones.find(x=>String(x.id)===String(db.institucionActivaId)); if(!inst)return;
+   const barra=document.createElement('section'); barra.className='eoe-contexto-activo';
+   const nombre=String(inst.nombreEscuela||'Institución').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   const nivel=String(inst.nivelInstitucion||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   barra.innerHTML='<div class="eoe-contexto-icono">🏫</div><div class="eoe-contexto-datos"><small>INSTITUCIÓN ACTIVA</small><strong>'+nombre+'</strong><span>Nivel '+nivel+' · Los registros corresponden a este espacio</span></div><button type="button" onclick="mostrarInstitucionesEOE()">↔ Cambiar</button>';
+   contenido.insertBefore(barra,contenido.firstChild);
+ }
+ let pendiente=false;
+ const observer=new MutationObserver(()=>{if(pendiente)return;pendiente=true;requestAnimationFrame(()=>{pendiente=false;agregarContextoInstitucional()})});
+ observer.observe(app,{childList:true,subtree:true});
+ document.addEventListener('click',()=>setTimeout(agregarContextoInstitucional,80),true);
+ window.addEventListener('load',()=>setTimeout(agregarContextoInstitucional,100));
+})();
+</script>
+
+
+<style id="eoe-auth-style">
+#app{display:none}
+#eoe-auth-gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f3f7fc,#edf7f3)}
+.eoe-auth-card{width:min(100%,470px);background:#fff;border:1px solid #e0e9f2;border-radius:26px;padding:clamp(22px,5vw,36px);box-shadow:0 18px 55px #193b5c14}
+.eoe-auth-brand{display:flex;align-items:center;gap:13px;margin-bottom:26px}.eoe-auth-logo{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(145deg,#2d7cdb,#1a9e91);color:white;font-weight:900;font-size:20px}.eoe-auth-brand strong{display:block;color:#18314f;font-size:23px;letter-spacing:-.7px}.eoe-auth-brand small{color:#718198}.eoe-auth-card h1{font-size:27px;letter-spacing:-.8px;margin:0 0 8px;color:#203853}.eoe-auth-card p{color:#718096;line-height:1.6;font-size:14px}.eoe-auth-card label{display:block;margin:14px 0 5px;color:#526b84;font-size:12px}.eoe-auth-card input{width:100%;padding:13px;border:1px solid #dbe4ef;background:#fbfcfe;border-radius:11px;font-size:15px}.eoe-auth-main{width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(110deg,#347bd1,#238e9a);font-weight:800;color:white;margin-top:18px}.eoe-auth-secondary{background:#fff;color:#456889;border:1px solid #dce6ef}.eoe-auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.eoe-auth-status{display:none;margin-top:14px;padding:12px;border-radius:11px;font-size:13px;line-height:1.5}.eoe-auth-status.error{display:block;background:#fff0ef;color:#a63d35}.eoe-auth-status.ok{display:block;background:#eaf7f0;color:#216d4d}.eoe-auth-foot{font-size:11px!important;margin-top:18px}.eoe-user-strip{position:sticky;top:0;z-index:1100;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#183454;color:#fff;padding:9px 14px;border-radius:0 0 14px 14px;margin:0 0 14px;font-size:12px}.eoe-user-strip button{width:auto;margin:0;padding:8px 11px;border-radius:99px;background:#ffd64a;color:#443600;font-weight:800}
+</style>
+<div id="eoe-auth-gate">
+ <section class="eoe-auth-card">
+  <div class="eoe-auth-brand"><div class="eoe-auth-logo">ER</div><div><strong>EOE en RED</strong><small>Espacios que acompañan trayectorias</small></div></div>
+  <div class="eyebrow">ACCESO PERSONAL</div><h1 id="eoe-auth-title">Bienvenido/a</h1><p id="eoe-auth-description">Ingresá con tu correo y contraseña para acceder a tu espacio de trabajo.</p>
+  <div id="eoe-auth-name-wrap" style="display:none"><label for="eoe-auth-name">Nombre y apellido</label><input id="eoe-auth-name" autocomplete="name" placeholder="Tu nombre"></div>
+  <label for="eoe-auth-email">Correo electrónico</label><input id="eoe-auth-email" type="email" autocomplete="email" placeholder="nombre@correo.com">
+  <label for="eoe-auth-password">Contraseña</label><input id="eoe-auth-password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+  <button class="eoe-auth-main" id="eoe-auth-submit" type="button">Iniciar sesión</button>
+  <div class="eoe-auth-actions"><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-toggle" type="button">Crear cuenta</button><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-reset" type="button">Olvidé mi contraseña</button></div>
+  <div id="eoe-auth-status" class="eoe-auth-status" role="status" aria-live="polite"></div>
+  <p class="eoe-auth-foot">Esta primera etapa verifica la identidad. Los datos del módulo todavía se guardan localmente; el acceso compartido por institución requiere configurar Firestore y sus reglas antes de habilitarlo.</p>
+ </section>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function(){
+ const gate=document.getElementById('eoe-auth-gate'), appRoot=document.getElementById('app');
+ const title=document.getElementById('eoe-auth-title'), desc=document.getElementById('eoe-auth-description'), nameWrap=document.getElementById('eoe-auth-name-wrap'), nameInput=document.getElementById('eoe-auth-name'), email=document.getElementById('eoe-auth-email'), password=document.getElementById('eoe-auth-password'), submit=document.getElementById('eoe-auth-submit'), toggle=document.getElementById('eoe-auth-toggle'), reset=document.getElementById('eoe-auth-reset'), status=document.getElementById('eoe-auth-status');
+ let registering=false, auth=null;
+ function message(text,kind){status.textContent=text;status.className='eoe-auth-status '+kind;}
+ function busy(on){submit.disabled=on;submit.textContent=on?'Procesando…':(registering?'Crear cuenta':'Iniciar sesión');}
+ function showGate(){gate.style.display='grid';appRoot.style.display='none';}
+ function showApp(user){gate.style.display='none';appRoot.style.display='block';let old=document.getElementById('eoe-auth-user-strip');if(old)old.remove();const bar=document.createElement('div');bar.id='eoe-auth-user-strip';bar.className='eoe-user-strip';bar.innerHTML='<span>🔐 Sesión iniciada: <b></b></span><button type="button">Cerrar sesión</button>';bar.querySelector('b').textContent=user.displayName||user.email||'Usuario';bar.querySelector('button').addEventListener('click',async()=>{try{await auth.signOut()}catch(e){alert('No se pudo cerrar sesión: '+friendly(e))}});appRoot.insertBefore(bar,appRoot.firstChild);}
+ function friendly(e){const c=e&&e.code||'';if(c.includes('email-already-in-use'))return 'Ese correo ya tiene una cuenta. Iniciá sesión.';if(c.includes('invalid-email'))return 'El correo electrónico no tiene un formato válido.';if(c.includes('weak-password'))return 'La contraseña es demasiado débil. Usá al menos 6 caracteres.';if(c.includes('user-not-found')||c.includes('invalid-credential')||c.includes('wrong-password'))return 'Correo o contraseña incorrectos.';if(c.includes('network-request-failed'))return 'No hay conexión estable. Revisá internet e intentá otra vez.';if(c.includes('operation-not-allowed'))return 'Firebase todavía no tiene habilitado el acceso por correo y contraseña.';if(c.includes('too-many-requests'))return 'Hubo muchos intentos. Esperá un poco y probá de nuevo.';return (e&&e.message)||'Ocurrió un error inesperado.';}
+ function setMode(reg){registering=reg;title.textContent=reg?'Crear cuenta':'Bienvenido/a';desc.textContent=reg?'Creá tu cuenta personal para ingresar a EOE en RED.':'Ingresá con tu correo y contraseña para acceder a tu espacio de trabajo.';nameWrap.style.display=reg?'block':'none';password.autocomplete=reg?'new-password':'current-password';submit.textContent=reg?'Crear cuenta':'Iniciar sesión';toggle.textContent=reg?'Ya tengo cuenta':'Crear cuenta';status.className='eoe-auth-status';}
+ toggle.addEventListener('click',()=>setMode(!registering));
+ submit.addEventListener('click',async()=>{const em=email.value.trim(), pw=password.value;status.className='eoe-auth-status';if(!em||!pw){message('Completá el correo y la contraseña.','error');return;}if(registering&&pw.length<6){message('Usá una contraseña de al menos 6 caracteres.','error');return;}busy(true);try{if(!auth)throw new Error('Firebase no se pudo inicializar. Revisá la conexión y recargá la página.');if(registering){const cred=await auth.createUserWithEmailAndPassword(em,pw);const nm=nameInput.value.trim();if(nm)await cred.user.updateProfile({displayName:nm});message('Cuenta creada. Ingresando…','ok');}else{await auth.signInWithEmailAndPassword(em,pw);}}catch(e){message(friendly(e),'error');}finally{busy(false);}});
+ reset.addEventListener('click',async()=>{const em=email.value.trim();if(!em){message('Escribí tu correo electrónico para enviarte el enlace de recuperación.','error');email.focus();return;}try{if(!auth)throw new Error('Firebase no se pudo inicializar.');await auth.sendPasswordResetEmail(em);message('Si el correo corresponde a una cuenta, Firebase enviará las instrucciones de recuperación. Revisá también correo no deseado.','ok');}catch(e){message(friendly(e),'error');}});
+ try{
+  if(!window.firebase||!firebase.initializeApp)throw new Error('No se pudieron cargar las bibliotecas de Firebase.');
+  const firebaseConfig={apiKey:'AIzaSyCTlRj34nCw96gL0ucDvw7AwlL1eriaM9I',authDomain:'eoeenred.firebaseapp.com',projectId:'eoeenred',storageBucket:'eoeenred.firebasestorage.app',messagingSenderId:'829169854934',appId:'1:829169854934:web:feb5497b2e59f558339c77'};
+  if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);auth=firebase.auth();
+  auth.onAuthStateChanged(user=>{if(user)showApp(user);else showGate();});
+ }catch(e){showGate();message('No se pudo iniciar Firebase. '+friendly(e),'error');}
+})();
+</script>
+
 </body>
 </html>
