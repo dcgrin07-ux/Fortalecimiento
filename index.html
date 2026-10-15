@@ -2140,7 +2140,7 @@ if ("serviceWorker" in navigator) {
  reset.addEventListener('click',async()=>{const em=email.value.trim();if(!em){message('Escribí tu correo electrónico para enviarte el enlace de recuperación.','error');email.focus();return;}try{if(!auth)throw new Error('Firebase no se pudo inicializar.');await auth.sendPasswordResetEmail(em);message('Si el correo corresponde a una cuenta, Firebase enviará las instrucciones de recuperación. Revisá también correo no deseado.','ok');}catch(e){message(friendly(e),'error');}});
  try{
   if(!window.firebase||!firebase.initializeApp)throw new Error('No se pudieron cargar las bibliotecas de Firebase.');
-  const firebaseConfig={apiKey:'AIzaSyCTlRj34nCw96gL0ucDvw7AwlL1eriaM9I',authDomain:'eoeenred.firebaseapp.com',projectId:'eoeenred',storageBucket:'eoeenred.firebasestorage.app',messagingSenderId:'829169854934',appId:'1:829169854934:web:feb5497b2e59f558339c77'};
+  const firebaseConfig={apiKey:'AIzaSyCTLRj34nCw96gL0ucDvw7AwLL1eriaM9I',authDomain:'eoeenred.firebaseapp.com',projectId:'eoeenred',storageBucket:'eoeenred.firebasestorage.app',messagingSenderId:'829169854934',appId:'1:829169854934:web:feb5497b2e59f558339c77'};
   if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);auth=firebase.auth();
   auth.onAuthStateChanged(user=>{if(user)showApp(user);else showGate();});
  }catch(e){showGate();message('No se pudo iniciar Firebase. '+friendly(e),'error');}
