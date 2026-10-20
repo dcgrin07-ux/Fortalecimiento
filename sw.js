@@ -1,5 +1,4 @@
-
-const CACHE_NAME = "fortalecimiento-v1";
+const CACHE_NAME = "fortalecimiento-v2";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -29,6 +28,27 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  if (event.request.mode === "navigate") {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      try {
+        const response = await fetch(event.request);
+        if (response.ok) {
+          await cache.put(event.request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (
+          await cache.match(event.request) ||
+          await cache.match("./index.html") ||
+          Response.error()
+        );
+      }
+    })());
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
