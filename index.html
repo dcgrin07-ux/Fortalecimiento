@@ -1306,6 +1306,12 @@ function documentosAlumnoHTML(alumno,id,curso,turno,modo){
  const lista=documentos.length?documentos.map(doc=>`<div class="alumno-documento"><div>${doc.tipo==="archivo"?`<a href="${esc(doc.contenido)}" download="${esc(doc.nombreArchivo)}">📥 ${esc(doc.titulo||doc.nombreArchivo||"Descargar archivo")}</a><small>${esc(doc.nombreArchivo||"Archivo adjunto")}</small>`:`<a href="${esc(doc.url)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(doc.titulo||"Abrir enlace")}</a><small>Enlace externo</small>`}</div><button class="del-btn" type="button" onclick="quitarDocumentoAlumno(${jsArg(id)},${jsArg(doc.id)},${jsArg(curso)},${jsArg(turno)},${jsArg(modo)})">Quitar</button></div>`).join(""):'<p class="small">Todavía no hay informes adjuntos.</p>';
  return `<section class="ficha-box alumno-documentos"><h3>📎 Informes y documentos</h3><p class="small">Guardá enlaces de Google Docs, Hojas de cálculo o Drive, o adjuntá un archivo pequeño.</p><label for="alumno-doc-titulo">Nombre del informe</label><input id="alumno-doc-titulo" placeholder="Ej.: Informe de seguimiento"><label for="alumno-doc-url">Enlace de Google Docs, Hojas de cálculo o Drive</label><input id="alumno-doc-url" type="url" placeholder="https://docs.google.com/..."><button type="button" class="primary-action" onclick="guardarEnlaceDocumentoAlumno(${jsArg(id)},${jsArg(curso)},${jsArg(turno)},${jsArg(modo)})">Guardar enlace</button><label for="alumno-doc-archivo">O adjuntá un archivo (máximo 150 KB)</label><input id="alumno-doc-archivo" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.png,.jpg,.jpeg"><button type="button" class="secondary-action" onclick="adjuntarArchivoAlumno(${jsArg(id)},${jsArg(curso)},${jsArg(turno)},${jsArg(modo)})">Adjuntar archivo</button><p class="small">Los enlaces respetan los permisos configurados en Google Drive. Los archivos se sincronizan si caben en el límite de almacenamiento de esta versión; para documentos grandes, pegá un enlace de Drive.</p><div class="alumno-documentos-lista">${lista}</div></section>`;
 }
+function insertarDocumentosAlumno(id,curso,turno,modo){
+ const app=document.getElementById("app");if(!app)return;
+ const html=documentosAlumnoHTML((db.listaAlumnos||[]).find(x=>String(x.id)===String(id))||{},id,curso,turno,modo);
+ const historial=[...app.querySelectorAll("h3")].find(x=>x.textContent.includes("Historial"));
+ if(historial)historial.insertAdjacentHTML("beforebegin",html);else app.insertAdjacentHTML("beforeend",html);
+}
 function refrescarFichaDocumentos(id,curso,turno,modo){
  if(modo==="otro")abrirFichaOtro(id,curso,turno);else abrirFicha(id,curso,turno);
 }
@@ -1400,7 +1406,7 @@ function abrirFichaOtro(id,c,t){
     </div>
     <h3>📜 Historial (${hist.length})</h3>
     ${histHtml||'<p class="small">No hay intervenciones registradas todavía.</p>'}`;
-  document.getElementById('app').insertAdjacentHTML('beforeend',documentosAlumnoHTML(a,id,c,t,'otro'));
+  insertarDocumentosAlumno(id,c,t,'otro');
 }
 
 function guardarProximoObjetivoOtro(id,c,t){
@@ -1571,7 +1577,7 @@ function abrirFicha(id,c,t){
         <h3>📜 Historial Completo (${histFlex.length} registros)</h3>
         ${histHtmlFlex||'<p class="small">No hay registros todavía.</p>'}
       `;
-      document.getElementById('app').insertAdjacentHTML('beforeend',documentosAlumnoHTML(a,id,c,t,'regular'));
+      insertarDocumentosAlumno(id,c,t,'regular');
       return;
     }
 
@@ -1713,7 +1719,7 @@ function abrirFicha(id,c,t){
       <div>${histHtml||'<p class="small">No hay registros todavía.</p>'}</div>
     `;
     calcularEvolucionAutomatica(id);
-    document.getElementById('app').insertAdjacentHTML('beforeend',documentosAlumnoHTML(a,id,c,t,'regular'));
+    insertarDocumentosAlumno(id,c,t,'regular');
   }catch(error){
     /* MUY IMPORTANTE: jamás borrar registros desde aquí */
     console.error("Error al abrir ficha:",error);
