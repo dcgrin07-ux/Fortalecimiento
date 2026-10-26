@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cada cuenta solo puede leer y escribir su propio estado sincronizado.
+    match /users/{uid}/appData/{documentId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['payload', 'writerId', 'updatedAt', 'schemaVersion'])
+        && request.resource.data.payload is string
+        && request.resource.data.payload.size() < 850000
+        && request.resource.data.writerId is string
+        && request.resource.data.schemaVersion == 1;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Todo lo que no esté declarado arriba queda cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
