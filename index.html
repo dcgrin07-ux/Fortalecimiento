@@ -69,8 +69,9 @@ button,input,textarea,select{font-family:inherit}button{transition:transform .18
 #eoe-back-floating span{font-size:9px;font-weight:900;letter-spacing:.4px;margin-top:2px}
 #eoe-back-floating:active{transform:scale(.96)}
 @media(min-width:760px){#eoe-back-floating{left:24px;bottom:24px;width:68px;height:68px;min-width:68px}}
+.institution-actions{display:flex;flex-direction:column;gap:7px;flex:0 0 175px}.institution-actions button{width:100%;margin:0;min-width:0}.institution-actions .del-btn{font-size:12px;padding:9px 12px}
 @media(min-width:760px){.portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.portal-card{min-height:255px}.portal-hero{margin-top:30px}}
-@media(max-width:520px){.portal-header{align-items:flex-start}.portal-user{font-size:10px;padding:7px 9px}.portal-logo{width:42px;height:42px}.portal-name{font-size:20px}.portal-sub{font-size:10px}.portal-grid,.personal-notes{grid-template-columns:1fr}.portal-card{min-height:205px;padding:20px}.portal-hero{border-radius:20px}.institution-card{align-items:flex-start;flex-wrap:wrap}.institution-info{flex:1 1 calc(100% - 65px)}.institution-card .primary-action{margin-left:60px}.portal-footer{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){.portal-header{align-items:flex-start}.portal-user{font-size:10px;padding:7px 9px}.portal-logo{width:42px;height:42px}.portal-name{font-size:20px}.portal-sub{font-size:10px}.portal-grid,.personal-notes{grid-template-columns:1fr}.portal-card{min-height:205px;padding:20px}.portal-hero{border-radius:20px}.institution-card{align-items:flex-start;flex-wrap:wrap}.institution-info{flex:1 1 calc(100% - 65px)}.institution-actions{flex:1 1 100%;margin-left:60px;width:calc(100% - 60px)}.institution-actions button,.institution-actions .primary-action{width:100%;margin-left:0}.portal-footer{align-items:flex-start;flex-direction:column}}
 
 
 /* Ajustes de la propuesta: contexto institucional claro y calendario personal, sin cambiar la identidad visual. */
@@ -241,11 +242,17 @@ function prepararInstitucion(inst){
 function fusionarConDefault(data){
   const out=deepClone(DEFAULT_DB);
   if(!data || typeof data!=="object") return out;
+  out.institucionesEliminadas=Array.isArray(data.institucionesEliminadas)?[...new Set(data.institucionesEliminadas.map(String))]:[];
 
   // Migración transparente: una instalación anterior se convierte en la primera institución.
-  if(Array.isArray(data.instituciones) && data.instituciones.length){
-    out.instituciones=data.instituciones.map(prepararInstitucion);
-    out.institucionActivaId=data.institucionActivaId||out.instituciones[0].id;
+  if(Array.isArray(data.instituciones)){
+    if(data.instituciones.length){
+      out.instituciones=data.instituciones.map(prepararInstitucion);
+      out.institucionActivaId=data.institucionActivaId||out.instituciones[0].id;
+    }else{
+      out.instituciones=[];
+      out.institucionActivaId="";
+    }
   }else{
     const legacy={
       nombreEscuela:typeof data.nombreEscuela==="string"?data.nombreEscuela:"Mi Escuela",
@@ -258,6 +265,7 @@ function fusionarConDefault(data){
   }
 
   const activa=out.instituciones.find(i=>i.id===out.institucionActivaId)||out.instituciones[0];
+  if(!activa)return out;
   out.institucionActivaId=activa.id;
   out.nombreEscuela=activa.nombreEscuela; out.nivelInstitucion=activa.nivelInstitucion;
   out.datosCurso=activa.datosCurso; out.tiposCurso=activa.tiposCurso;
@@ -286,7 +294,7 @@ function mergeSyncValue(localValue,remoteValue){
  return remoteValue===undefined?localValue:deepClone(remoteValue);
 }
 function combinarEstadosNube(localState,remoteState){
- const merged=mergeSyncValue(localState,remoteState),localInsts=Array.isArray(localState.instituciones)?localState.instituciones:[],remoteInsts=Array.isArray(remoteState.instituciones)?remoteState.instituciones:[],combined=localInsts.map(i=>deepClone(i));
+ const merged=mergeSyncValue(localState,remoteState),deleted=new Set((merged.institucionesEliminadas||[]).map(String)),localInsts=(Array.isArray(localState.instituciones)?localState.instituciones:[]).filter(i=>!deleted.has(String(i.id))),remoteInsts=(Array.isArray(remoteState.instituciones)?remoteState.instituciones:[]).filter(i=>!deleted.has(String(i.id))),combined=localInsts.map(i=>deepClone(i));
  for(const remoteInst of remoteInsts){const name=String(remoteInst.nombreEscuela||'').trim().toLocaleLowerCase('es'),level=String(remoteInst.nivelInstitucion||'').trim().toLocaleLowerCase('es');const at=combined.findIndex(i=>String(i.id)===String(remoteInst.id)||(name&&String(i.nombreEscuela||'').trim().toLocaleLowerCase('es')===name&&String(i.nivelInstitucion||'').trim().toLocaleLowerCase('es')===level));if(at<0)combined.push(deepClone(remoteInst));else combined[at]=mergeSyncValue(combined[at],remoteInst);}
  merged.instituciones=combined;const preferred=remoteState.institucionActivaId||localState.institucionActivaId;merged.institucionActivaId=combined.some(i=>String(i.id)===String(preferred))?preferred:(combined[0]?.id||'');if(!combined.length)return {...deepClone(DEFAULT_DB),...merged,instituciones:[],institucionActivaId:''};return fusionarConDefault(merged);
 }
@@ -296,7 +304,7 @@ function programarGuardadoNube(){if(!cloudReady||!cloudRef||!cloudUid)return;cle
 async function iniciarSincronizacionNube(user){
  if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}clearTimeout(cloudSaveTimer);cloudSaveTimer=null;cloudReady=false;cloudUid=user.uid;cloudDeviceId=obtenerIdDispositivo();setCloudStatus('Conectando datos…');if(!cloudDb){setCloudStatus('Solo en este dispositivo: falta activar Firestore.');return;}
  const owner=localStorage.getItem(LOCAL_OWNER_KEY)||'',sameOwner=!owner||owner===user.uid;if(owner&&owner!==user.uid){try{localStorage.setItem('eoe_backup_account_'+owner,localStorage.getItem(STORAGE_KEY)||'');}catch(e){}}
- const localState=deepClone(db),localHasData=sameOwner&&tieneDatosDeUsuario(localState);cloudRef=cloudDb.collection('users').doc(user.uid).collection('appData').doc('main');
+ const localState=deepClone(db),localHasData=sameOwner&&(tieneDatosDeUsuario(localState)||(Array.isArray(localState.institucionesEliminadas)&&localState.institucionesEliminadas.length>0));cloudRef=cloudDb.collection('users').doc(user.uid).collection('appData').doc('main');
  try{const startupRef=cloudRef,startupDevice=cloudDeviceId;const snap=await startupRef.get();if(cloudUid!==user.uid||cloudRef!==startupRef)return;let nextState,remotePayload='';
   if(snap.exists){const data=snap.data()||{};remotePayload=typeof data.payload==='string'?data.payload:'';const remoteState=leerEstadoNube(remotePayload);nextState=localHasData?combinarEstadosNube(localState,remoteState):remoteState;guardarEstadoLocalNube(nextState);if(JSON.stringify(nextState)!==remotePayload)await escribirEstadoNube(nextState,startupRef,startupDevice);else{cloudLastPayload=remotePayload;setCloudStatus('Sincronizado con esta cuenta');}}
   else{nextState=sameOwner?localState:deepClone(DEFAULT_DB);guardarEstadoLocalNube(nextState);await escribirEstadoNube(nextState,startupRef,startupDevice);}
@@ -734,9 +742,30 @@ function guardarNotaPersonalEOE(){const titulo=document.getElementById('eoe-nota
 function eliminarNotaPersonalEOE(id){if(!confirm('¿Eliminar esta nota personal?'))return;const d=leerPersonalEOE();d.notas=d.notas.filter(n=>String(n.id)!==String(id));guardarPersonalEOE(d);mostrarEspacioPersonalEOE()}
 function mostrarInstitucionesEOE(){
  const insts=Array.isArray(db.instituciones)?db.instituciones:[];
- document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon institution-icon">⌂</div><div><div class="eyebrow">ESPACIOS DE TRABAJO</div><h1>Mis instituciones</h1><p>Elegí una institución. Una vez seleccionada, será el contexto de trabajo para sus cursos, alumnos e historiales.</p></div></div>${db.institucionActivaId&&insts.some(x=>String(x.id)===String(db.institucionActivaId))?`<div class="active-institution-banner"><span class="active-institution-label">INSTITUCIÓN ACTIVA</span><strong>${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nombreEscuela)}</strong><span>Nivel ${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nivelInstitucion)}</span></div>`:''}<div class="institution-list">${insts.map(i=>`<article class="institution-card"><div class="institution-symbol">⌂</div><div class="institution-info"><h3>${esc(i.nombreEscuela)}</h3><p>Nivel ${esc(i.nivelInstitucion)}</p><span>Espacio registrado en este dispositivo</span></div><button class="primary-action" onclick="seleccionarInstitucionPortalEOE('${String(i.id).replace(/'/g,"\'")}')">${String(i.id)===String(db.institucionActivaId)?'Institución activa ✓':'Elegir institución →'}</button></article>`).join('')||'<div class="empty-state">Todavía no hay instituciones registradas. Podés agregar una desde la configuración del módulo de seguimiento.</div>'}</div><p class="local-warning">Primero elegís la institución; desde su ficha entrás a las trayectorias. La gestión compartida de integrantes y permisos requiere Firebase.</p></div>`
+ document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon institution-icon">⌂</div><div><div class="eyebrow">ESPACIOS DE TRABAJO</div><h1>Mis instituciones</h1><p>Elegí una institución. Una vez seleccionada, será el contexto de trabajo para sus cursos, alumnos e historiales.</p></div></div>${db.institucionActivaId&&insts.some(x=>String(x.id)===String(db.institucionActivaId))?`<div class="active-institution-banner"><span class="active-institution-label">INSTITUCIÓN ACTIVA</span><strong>${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nombreEscuela)}</strong><span>Nivel ${esc(insts.find(x=>String(x.id)===String(db.institucionActivaId)).nivelInstitucion)}</span></div>`:''}<div class="institution-list">${insts.map(i=>`<article class="institution-card"><div class="institution-symbol">⌂</div><div class="institution-info"><h3>${esc(i.nombreEscuela)}</h3><p>Nivel ${esc(i.nivelInstitucion)}</p><span>Institución sincronizada con tu cuenta</span></div><div class="institution-actions"><button class="primary-action" onclick="seleccionarInstitucionPortalEOE('${String(i.id).replace(/'/g,"\\'")}')">${String(i.id)===String(db.institucionActivaId)?'Institución activa ✓':'Elegir institución →'}</button><button class="del-btn" type="button" onclick="eliminarInstitucionPortalEOE('${String(i.id).replace(/'/g,"\\'")}')">Eliminar institución</button></div></article>`).join('')||'<div class="empty-state">Todavía no hay instituciones registradas. Podés agregar una desde la configuración del módulo de seguimiento.</div>'}</div><p class="local-warning">Al eliminar una institución, también se borran sus cursos, alumnos e historiales de esta cuenta y de los dispositivos sincronizados. Te pediremos confirmar antes de eliminar.</p></div>`
 }
 function seleccionarInstitucionPortalEOE(id){cargarInstitucion(id);mostrarInstitucionesEOE();}
+function eliminarInstitucionPortalEOE(id){
+ sincronizarInstitucionActiva();
+ const insts=Array.isArray(db.instituciones)?db.instituciones:[],inst=insts.find(x=>String(x.id)===String(id));
+ if(!inst)return;
+ const alumnoCount=Array.isArray(inst.listaAlumnos)?inst.listaAlumnos.length:0;
+ const mensaje='¿Eliminar la institución "'+String(inst.nombreEscuela||'')+'"'+(alumnoCount?' y sus '+alumnoCount+' alumnos':'')+'? También se eliminarán sus cursos e historiales de esta cuenta y de los dispositivos sincronizados. Esta acción no se puede deshacer.';
+ if(!window.confirm(mensaje))return;
+ db.institucionesEliminadas=[...new Set([...(db.institucionesEliminadas||[]).map(String),String(inst.id)])];
+ db.instituciones=insts.filter(x=>String(x.id)!==String(inst.id));
+ const activaRestante=db.instituciones.find(x=>String(x.id)===String(db.institucionActivaId))||db.instituciones[0];
+ if(activaRestante){
+  db.institucionActivaId=activaRestante.id;db.nombreEscuela=activaRestante.nombreEscuela;db.nivelInstitucion=activaRestante.nivelInstitucion;
+  db.datosCurso=deepClone(activaRestante.datosCurso);db.tiposCurso=deepClone(activaRestante.tiposCurso);db.cursosNombres=deepClone(activaRestante.cursosNombres);
+  db.listaAlumnos=deepClone(activaRestante.listaAlumnos);db.registrosAlumnos=deepClone(activaRestante.registrosAlumnos);
+ }else{
+  const tombstones=db.institucionesEliminadas;
+  Object.assign(db,deepClone(DEFAULT_DB));db.instituciones=[];db.institucionActivaId='';db.institucionesEliminadas=tombstones;
+ }
+ if(!guardar())return;
+ mostrarInstitucionesEOE();
+}
 function verInstitucionEOE(id){
  const inst=(db.instituciones||[]).find(x=>String(x.id)===String(id));
  if(!inst){alert('No se encontró esa institución.');mostrarInstitucionesEOE();return}
