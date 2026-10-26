@@ -1,17 +1,75 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada cuenta solo puede leer y escribir su propio estado sincronizado.
-    match /users/{uid}/appData/{documentId} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow create, update: if request.auth != null
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // La cuenta propietaria puede administrar altas y autorizaciones.
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.email == 'dcgrin07@gmail.com';
+    }
+
+    function ownAuthorizedProfile(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        && get(/databases/$(database)/documents/users/$(uid)).data.autorizado == true;
+    }
+
+    // El administrador solo obtiene acceso a sus propios datos.
+    function canUseOwnData(uid) {
+      return signedIn()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['payload', 'writerId', 'updatedAt', 'schemaVersion'])
+        && (isOwner() || ownAuthorizedProfile(uid));
+    }
+
+    match /users/{uid} {
+      // Cada persona ve su estado; la cuenta propietaria puede listar perfiles
+      // para aprobarlos o bloquearlos desde el panel.
+      allow read: if signedIn() && (request.auth.uid == uid || isOwner());
+
+      // El registro propio siempre crea una cuenta pendiente. Solo la cuenta
+      // propietaria puede crear su perfil de administradora.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'email', 'nombre', 'rol', 'autorizado', 'creado'
+        ])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.nombre is string
+        && request.resource.data.autorizado is bool
+        && (
+          (isOwner()
+            && request.resource.data.rol == 'admin'
+            && request.resource.data.autorizado == true)
+          ||
+          (!isOwner()
+            && request.resource.data.rol == 'usuario'
+            && request.resource.data.autorizado == false)
+        );
+
+      // Solo la cuenta propietaria puede cambiar el estado de autorización.
+      // El rol no se puede cambiar desde el panel.
+      allow update: if isOwner()
+        && uid != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['autorizado', 'actualizado'])
+        && request.resource.data.autorizado is bool;
+
+      allow delete: if false;
+    }
+
+    match /users/{uid}/appData/{documentId} {
+      allow read: if canUseOwnData(uid);
+      allow create, update: if canUseOwnData(uid)
+        && request.resource.data.keys().hasOnly([
+          'payload', 'writerId', 'updatedAt', 'schemaVersion'
+        ])
         && request.resource.data.payload is string
         && request.resource.data.payload.size() < 850000
         && request.resource.data.writerId is string
         && request.resource.data.schemaVersion == 1;
-      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow delete: if canUseOwnData(uid);
     }
 
     // Todo lo que no esté declarado arriba queda cerrado.
