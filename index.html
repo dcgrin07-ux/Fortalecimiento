@@ -273,6 +273,38 @@ function sincronizarInstitucionActiva(){
   inst.listaAlumnos=db.listaAlumnos; inst.registrosAlumnos=db.registrosAlumnos;
 }
 
+
+const LOCAL_OWNER_KEY='eoe_local_owner_uid';
+let cloudDb=null, cloudRef=null, cloudReady=false, cloudUnsubscribe=null, cloudSaveTimer=null, cloudUid='', cloudLastPayload='', cloudDeviceId='';
+function obtenerIdDispositivo(){try{let id=localStorage.getItem('eoe_device_id');if(!id){id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));localStorage.setItem('eoe_device_id',id);}return id;}catch(e){return 'browser-'+Date.now().toString(36);}}
+function setCloudStatus(text){const el=document.getElementById('eoe-cloud-status');if(el)el.textContent=text;}
+function tieneDatosDeUsuario(state){const insts=Array.isArray(state&&state.instituciones)?state.instituciones:[];return insts.some(i=>i&&((i.nombreEscuela&&i.nombreEscuela!=='Mi Escuela')||(Array.isArray(i.listaAlumnos)&&i.listaAlumnos.length>0)||(i.registrosAlumnos&&Object.keys(i.registrosAlumnos).length>0)||(i.datosCurso&&Object.keys(i.datosCurso).length>0)||(i.tiposCurso&&Object.keys(i.tiposCurso).length>0)));}
+function leerEstadoNube(payload){const parsed=JSON.parse(payload);if(parsed&&Array.isArray(parsed.instituciones)&&parsed.instituciones.length===0)return {...deepClone(DEFAULT_DB),...parsed,instituciones:[],institucionActivaId:''};return fusionarConDefault(parsed);}
+function mergeSyncValue(localValue,remoteValue){
+ if(Array.isArray(localValue)&&Array.isArray(remoteValue)){const out=localValue.map(x=>deepClone(x));for(const item of remoteValue){const key=item&&typeof item==='object'&&item.id!=null?'id:'+item.id:null;const index=key?out.findIndex(x=>x&&typeof x==='object'&&x.id!=null&&('id:'+x.id)===key):out.findIndex(x=>JSON.stringify(x)===JSON.stringify(item));if(index<0)out.push(deepClone(item));else if(item&&typeof item==='object'&&out[index]&&typeof out[index]==='object')out[index]=mergeSyncValue(out[index],item);}return out;}
+ if(localValue&&remoteValue&&typeof localValue==='object'&&typeof remoteValue==='object'&&!Array.isArray(localValue)&&!Array.isArray(remoteValue)){const out={...localValue};for(const key of Object.keys(remoteValue))out[key]=key in out?mergeSyncValue(out[key],remoteValue[key]):deepClone(remoteValue[key]);return out;}
+ return remoteValue===undefined?localValue:deepClone(remoteValue);
+}
+function combinarEstadosNube(localState,remoteState){
+ const merged=mergeSyncValue(localState,remoteState),localInsts=Array.isArray(localState.instituciones)?localState.instituciones:[],remoteInsts=Array.isArray(remoteState.instituciones)?remoteState.instituciones:[],combined=localInsts.map(i=>deepClone(i));
+ for(const remoteInst of remoteInsts){const name=String(remoteInst.nombreEscuela||'').trim().toLocaleLowerCase('es'),level=String(remoteInst.nivelInstitucion||'').trim().toLocaleLowerCase('es');const at=combined.findIndex(i=>String(i.id)===String(remoteInst.id)||(name&&String(i.nombreEscuela||'').trim().toLocaleLowerCase('es')===name&&String(i.nivelInstitucion||'').trim().toLocaleLowerCase('es')===level));if(at<0)combined.push(deepClone(remoteInst));else combined[at]=mergeSyncValue(combined[at],remoteInst);}
+ merged.instituciones=combined;const preferred=remoteState.institucionActivaId||localState.institucionActivaId;merged.institucionActivaId=combined.some(i=>String(i.id)===String(preferred))?preferred:(combined[0]?.id||'');if(!combined.length)return {...deepClone(DEFAULT_DB),...merged,instituciones:[],institucionActivaId:''};return fusionarConDefault(merged);
+}
+function guardarEstadoLocalNube(state){db=Array.isArray(state&&state.instituciones)&&state.instituciones.length===0?{...deepClone(DEFAULT_DB),...state,instituciones:[],institucionActivaId:''}:fusionarConDefault(state);localStorage.setItem(STORAGE_KEY,JSON.stringify(db));if(document.querySelector('#app .portal-wrap'))mostrarInicio();}
+async function escribirEstadoNube(state){const payload=JSON.stringify(state);if(new Blob([payload]).size>800000){setCloudStatus('No se sincronizó: los datos superan el límite de esta versión. La copia local sigue guardada.');return false;}await cloudRef.set({schemaVersion:1,payload,writerId:cloudDeviceId,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});cloudLastPayload=payload;setCloudStatus('Sincronizado con esta cuenta');return true;}
+function programarGuardadoNube(){if(!cloudReady||!cloudRef||!cloudUid)return;clearTimeout(cloudSaveTimer);setCloudStatus('Guardando cambios en la nube…');cloudSaveTimer=setTimeout(async()=>{try{await escribirEstadoNube(db);}catch(error){setCloudStatus('No se pudo sincronizar. La copia local sigue guardada. Revisá Firestore.');console.error('Firestore save:',error);}},700);}
+async function iniciarSincronizacionNube(user){
+ if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}cloudReady=false;cloudUid=user.uid;cloudDeviceId=obtenerIdDispositivo();setCloudStatus('Conectando datos…');if(!cloudDb){setCloudStatus('Solo en este dispositivo: falta activar Firestore.');return;}
+ const owner=localStorage.getItem(LOCAL_OWNER_KEY)||'',sameOwner=!owner||owner===user.uid;if(owner&&owner!==user.uid){try{localStorage.setItem('eoe_backup_account_'+owner,localStorage.getItem(STORAGE_KEY)||'');}catch(e){}}
+ const localState=deepClone(db),localHasData=sameOwner&&tieneDatosDeUsuario(localState);cloudRef=cloudDb.collection('users').doc(user.uid).collection('appData').doc('main');
+ try{const snap=await cloudRef.get();let nextState,remotePayload='';
+  if(snap.exists){const data=snap.data()||{};remotePayload=typeof data.payload==='string'?data.payload:'';const remoteState=leerEstadoNube(remotePayload);nextState=localHasData?combinarEstadosNube(localState,remoteState):remoteState;guardarEstadoLocalNube(nextState);if(JSON.stringify(nextState)!==remotePayload)await escribirEstadoNube(nextState);else{cloudLastPayload=remotePayload;setCloudStatus('Sincronizado con esta cuenta');}}
+  else{nextState=sameOwner?localState:deepClone(DEFAULT_DB);guardarEstadoLocalNube(nextState);await escribirEstadoNube(nextState);}
+  localStorage.setItem(LOCAL_OWNER_KEY,user.uid);cloudReady=true;
+  cloudUnsubscribe=cloudRef.onSnapshot(snapshot=>{if(!snapshot.exists)return;const data=snapshot.data()||{},payload=typeof data.payload==='string'?data.payload:'';if(!payload||payload===cloudLastPayload)return;if(data.writerId===cloudDeviceId){cloudLastPayload=payload;setCloudStatus('Sincronizado con esta cuenta');return;}try{const remote=leerEstadoNube(payload),combined=combinarEstadosNube(db,remote),combinedPayload=JSON.stringify(combined);cloudLastPayload=payload;if(combinedPayload!==JSON.stringify(db))guardarEstadoLocalNube(combined);if(combinedPayload!==payload)programarGuardadoNube();else setCloudStatus('Actualizado desde otro dispositivo');}catch(error){setCloudStatus('No se pudo leer la actualización; la copia local sigue guardada.');console.error('Firestore snapshot:',error);}},error=>{setCloudStatus('Sin conexión con Firestore. La copia local sigue guardada.');console.error('Firestore listener:',error);});
+ }catch(error){cloudReady=false;const code=String(error&&error.code||'');if(code.includes('permission-denied'))setCloudStatus('Firestore está activo, pero faltan sus reglas de acceso.');else if(code.includes('failed-precondition')||code.includes('not-found'))setCloudStatus('Falta crear la base de Firestore en Firebase.');else setCloudStatus('Sincronización pendiente. La app sigue guardando en este dispositivo.');console.error('Firestore init:',error);}
+}
+
 function cargarDatosSeguros(){
   try{
     const raw=localStorage.getItem(STORAGE_KEY) || localStorage.getItem("datos_sistema_v7") || localStorage.getItem("datos_sistema_v6");
@@ -290,6 +322,7 @@ function guardar(){
     sincronizarInstitucionActiva();
     const copia=JSON.stringify(db);
     localStorage.setItem(STORAGE_KEY,copia);
+    programarGuardadoNube();
     return true;
   }catch(e){
     console.error("Error al guardar:",e);
@@ -2119,11 +2152,12 @@ if ("serviceWorker" in navigator) {
   <button class="eoe-auth-main" id="eoe-auth-submit" type="button">Iniciar sesión</button>
   <div class="eoe-auth-actions"><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-toggle" type="button">Crear cuenta</button><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-reset" type="button">Olvidé mi contraseña</button></div>
   <div id="eoe-auth-status" class="eoe-auth-status" role="status" aria-live="polite"></div>
-  <p class="eoe-auth-foot">El acceso verifica la identidad de la persona. Los datos del módulo continúan guardándose localmente en este dispositivo; el uso compartido por institución requiere configurar Firestore y sus reglas de seguridad.</p>
+  <p class="eoe-auth-foot">El acceso verifica tu identidad. Cuando Firestore esté configurado, tus instituciones y trayectorias se sincronizarán entre dispositivos con esta misma cuenta.</p>
  </section>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script id="eoe-auth-controller-v2">
 (function(){
  'use strict';
@@ -2140,7 +2174,7 @@ if ("serviceWorker" in navigator) {
  function clearMessage(){status.textContent='';status.className='eoe-auth-status';}
  function setBusy(on,action){busyNow=on;submit.disabled=on;toggle.disabled=on;reset.disabled=on;submit.textContent=on?'Procesando…':(registering?'Crear cuenta':'Iniciar sesión');reset.textContent=(on&&action==='reset')?'Enviando…':'Olvidé mi contraseña';}
  function showGate(){if(gate)gate.style.display='grid';if(appRoot)appRoot.style.display='none';}
- function showApp(user){if(gate)gate.style.display='none';if(!appRoot)return;appRoot.style.display='block';const old=document.getElementById('eoe-auth-user-strip');if(old)old.remove();const bar=document.createElement('div');bar.id='eoe-auth-user-strip';bar.className='eoe-user-strip';bar.innerHTML='<span>🔐 Sesión iniciada: <b></b></span><button type="button">Cerrar sesión</button>';bar.querySelector('b').textContent=(user&&user.displayName)||(user&&user.email)||'Usuario';bar.querySelector('button').addEventListener('click',async function(){if(busyNow)return;try{await auth.signOut();}catch(e){alert('No se pudo cerrar sesión: '+friendlyError(e));}});appRoot.insertBefore(bar,appRoot.firstChild);}
+ function showApp(user){if(gate)gate.style.display='none';if(!appRoot)return;appRoot.style.display='block';const old=document.getElementById('eoe-auth-user-strip');if(old)old.remove();const bar=document.createElement('div');bar.id='eoe-auth-user-strip';bar.className='eoe-user-strip';bar.innerHTML='<span>🔐 Sesión iniciada: <b></b><br><small id="eoe-cloud-status">Sincronización pendiente…</small></span><button type="button">Cerrar sesión</button>';bar.querySelector('b').textContent=(user&&user.displayName)||(user&&user.email)||'Usuario';bar.querySelector('button').addEventListener('click',async function(){if(busyNow)return;try{await auth.signOut();}catch(e){alert('No se pudo cerrar sesión: '+friendlyError(e));}});appRoot.insertBefore(bar,appRoot.firstChild);}
  function friendlyError(error){const code=String(error&&error.code||''),raw=String(error&&error.message||''),all=(code+' '+raw).toLowerCase();
   if(all.includes('api-key-not-valid')||all.includes('invalid-api-key')||all.includes('api key not valid'))return 'Firebase rechazó la clave API antes de validar la cuenta. Este error no significa que la contraseña sea incorrecta. Hay que revisar la clave y sus restricciones en Google Cloud.';
   if(code.includes('unauthorized-domain'))return 'Firebase no autoriza este dominio. En Authentication → Configuración, verificá que esté dcgrin07-ux.github.io.';
@@ -2160,8 +2194,8 @@ if ("serviceWorker" in navigator) {
   if(!window.firebase||typeof firebase.initializeApp!=='function'||typeof firebase.auth!=='function')throw new Error('No se pudieron cargar las bibliotecas de Firebase. Revisá la conexión y recargá la página.');
   if(!firebaseConfig.apiKey||firebaseConfig.apiKey.length<20)throw new Error('La configuración de Firebase no contiene una clave API válida.');
   const appInstance=(firebase.apps&&firebase.apps.length)?firebase.app():firebase.initializeApp(firebaseConfig);
-  auth=appInstance.auth();auth.languageCode='es';authReady=true;
-  auth.onAuthStateChanged(function(user){if(user)showApp(user);else showGate();},function(error){showGate();message(friendlyError(error),'error');});
+  auth=appInstance.auth();auth.languageCode='es';cloudDb=typeof appInstance.firestore==='function'?appInstance.firestore():null;authReady=true;
+  auth.onAuthStateChanged(function(user){if(user){showApp(user);iniciarSincronizacionNube(user);}else{if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}cloudReady=false;cloudUid='';showGate();}},function(error){showGate();message(friendlyError(error),'error');});
  }catch(error){authReady=false;auth=null;showGate();message(friendlyError(error),'error');}}
  toggle.addEventListener('click',function(){if(!busyNow)setMode(!registering);});
  submit.addEventListener('click',async function(){if(busyNow)return;clearMessage();const em=email.value.trim(),pw=password.value;if(!em){message('Escribí tu correo electrónico.','error');email.focus();return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){message('Revisá el formato del correo electrónico.','error');email.focus();return;}if(!pw){message('Escribí tu contraseña.','error');password.focus();return;}if(registering&&pw.length<6){message('Usá una contraseña de al menos 6 caracteres.','error');password.focus();return;}if(!authReady||!auth){message('Firebase todavía no está listo. Recargá la página una vez.','error');return;}setBusy(true,'submit');try{if(registering){const credential=await auth.createUserWithEmailAndPassword(em,pw);const displayName=nameInput.value.trim();if(displayName)await credential.user.updateProfile({displayName:displayName});message('Cuenta creada correctamente.','ok');}else{await auth.signInWithEmailAndPassword(em,pw);}}catch(error){message(friendlyError(error),'error');}finally{setBusy(false);}});
