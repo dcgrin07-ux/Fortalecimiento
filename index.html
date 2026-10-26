@@ -290,7 +290,7 @@ function combinarEstadosNube(localState,remoteState){
  for(const remoteInst of remoteInsts){const name=String(remoteInst.nombreEscuela||'').trim().toLocaleLowerCase('es'),level=String(remoteInst.nivelInstitucion||'').trim().toLocaleLowerCase('es');const at=combined.findIndex(i=>String(i.id)===String(remoteInst.id)||(name&&String(i.nombreEscuela||'').trim().toLocaleLowerCase('es')===name&&String(i.nivelInstitucion||'').trim().toLocaleLowerCase('es')===level));if(at<0)combined.push(deepClone(remoteInst));else combined[at]=mergeSyncValue(combined[at],remoteInst);}
  merged.instituciones=combined;const preferred=remoteState.institucionActivaId||localState.institucionActivaId;merged.institucionActivaId=combined.some(i=>String(i.id)===String(preferred))?preferred:(combined[0]?.id||'');if(!combined.length)return {...deepClone(DEFAULT_DB),...merged,instituciones:[],institucionActivaId:''};return fusionarConDefault(merged);
 }
-function guardarEstadoLocalNube(state){db=Array.isArray(state&&state.instituciones)&&state.instituciones.length===0?{...deepClone(DEFAULT_DB),...state,instituciones:[],institucionActivaId:''}:fusionarConDefault(state);localStorage.setItem(STORAGE_KEY,JSON.stringify(db));if(document.querySelector('#app .portal-wrap'))mostrarInicio();}
+function guardarEstadoLocalNube(state){db=Array.isArray(state&&state.instituciones)&&state.instituciones.length===0?{...deepClone(DEFAULT_DB),...state,instituciones:[],institucionActivaId:''}:fusionarConDefault(state);localStorage.setItem(STORAGE_KEY,JSON.stringify(db));if(document.querySelector('#app .portal-wrap')){const appRoot=document.getElementById('app'),strip=document.getElementById('eoe-auth-user-strip');if(strip)strip.remove();mostrarInicio();if(strip)appRoot.insertBefore(strip,appRoot.firstChild);}}
 async function escribirEstadoNube(state,targetRef,targetDevice){const ref=targetRef||cloudRef,writer=targetDevice||cloudDeviceId,payload=JSON.stringify(state);if(new Blob([payload]).size>800000){setCloudStatus('No se sincronizó: los datos superan el límite de esta versión. La copia local sigue guardada.');return false;}await ref.set({schemaVersion:1,payload,writerId:writer,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});if(cloudRef===ref&&cloudDeviceId===writer){cloudLastPayload=payload;setCloudStatus('Sincronizado con esta cuenta');}return true;}
 function programarGuardadoNube(){if(!cloudReady||!cloudRef||!cloudUid)return;clearTimeout(cloudSaveTimer);const targetRef=cloudRef,targetUid=cloudUid,targetDevice=cloudDeviceId;setCloudStatus('Guardando cambios en la nube…');cloudSaveTimer=setTimeout(async()=>{cloudSaveTimer=null;if(cloudUid!==targetUid||cloudRef!==targetRef||cloudDeviceId!==targetDevice)return;try{await escribirEstadoNube(db,targetRef,targetDevice);}catch(error){if(cloudUid===targetUid)setCloudStatus('No se pudo sincronizar. La copia local sigue guardada. Revisá Firestore.');console.error('Firestore save:',error);}},700);}
 async function iniciarSincronizacionNube(user){
@@ -708,7 +708,7 @@ function mostrarInicio(){
  const totalAlumnos=insts.reduce((n,i)=>n+((i.listaAlumnos||[]).filter(a=>a.activo!==false).length),0);
  document.getElementById('app').innerHTML=`
  <div class="portal-wrap">
-  <header class="portal-header"><div class="portal-brand"><div class="portal-logo">ER</div><div><div class="portal-name">EOE <span>en RED</span></div><div class="portal-sub">Espacios que acompañan trayectorias</div></div></div><div class="portal-user"><span class="status-dot"></span> Espacio de trabajo local</div></header>
+  <header class="portal-header"><div class="portal-brand"><div class="portal-logo">ER</div><div><div class="portal-name">EOE <span>en RED</span></div><div class="portal-sub">Espacios que acompañan trayectorias</div></div></div><div class="portal-user"><span class="status-dot"></span> Cuenta conectada</div></header>
   <section class="portal-hero"><div><div class="eyebrow">PLATAFORMA DE TRABAJO EDUCATIVO</div><h1>Un espacio para acompañar,<br><span>registrar y construir en red.</span></h1><p>Organizá tus materiales, tus escritos y el trabajo de cada institución desde un mismo lugar.</p></div><div class="hero-symbol">✳</div></section>
   <div class="portal-section-title"><div><h2>¿Dónde querés trabajar?</h2><p>Elegí un espacio para continuar.</p></div><span class="portal-mini-tag">EOE · RED</span></div>
   <section class="portal-grid">
@@ -719,8 +719,8 @@ function mostrarInicio(){
    <button class="portal-card card-equipo" onclick="mostrarAdministracionEOE()"><span class="card-icon">♧</span><span class="card-kicker">ORGANIZACIÓN</span><strong>Gestión institucional</strong><span class="card-desc">Administrá localmente las instituciones que querés tener visibles en el portal.</span><span class="card-link">Gestionar espacios <b>↗</b></span></button>
    <button class="portal-card card-informes" onclick="mostrarEstadisticas()"><span class="card-icon">▥</span><span class="card-kicker">INFORMACIÓN</span><strong>Estadísticas e informes</strong><span class="card-desc">Consultá los datos que ya registra el módulo de trayectorias.</span><span class="card-link">Ver estadísticas <b>↗</b></span></button>
   </section>
-  <section class="portal-bottom"><div class="bottom-mark">i</div><div><strong>Tu trabajo, organizado en un solo lugar.</strong><p>Los datos de seguimiento y los nuevos espacios personales de esta versión se guardan localmente en el dispositivo. La sincronización entre usuarios mediante Firebase todavía requiere integración y reglas de seguridad.</p></div></section>
-  <footer class="portal-footer"><span>EOE en RED</span><span>Versión de trabajo · No sincronizada</span><button onclick="descargarBackup()">Descargar copia de seguridad ↗</button></footer>
+  <section class="portal-bottom"><div class="bottom-mark">i</div><div><strong>Tu trabajo, organizado en un solo lugar.</strong><p>Las instituciones y trayectorias se sincronizan con Firebase en esta cuenta. Las notas personales y la biblioteca siguen guardándose en este dispositivo.</p></div></section>
+  <footer class="portal-footer"><span>EOE en RED</span><span>Instituciones y trayectorias · sincronización con Firebase</span><button onclick="descargarBackup()">Descargar copia de seguridad ↗</button></footer>
  </div>`;
 }
 function mostrarEspacioPersonalEOE(){
@@ -2152,7 +2152,7 @@ if ("serviceWorker" in navigator) {
   <button class="eoe-auth-main" id="eoe-auth-submit" type="button">Iniciar sesión</button>
   <div class="eoe-auth-actions"><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-toggle" type="button">Crear cuenta</button><button class="eoe-auth-main eoe-auth-secondary" id="eoe-auth-reset" type="button">Olvidé mi contraseña</button></div>
   <div id="eoe-auth-status" class="eoe-auth-status" role="status" aria-live="polite"></div>
-  <p class="eoe-auth-foot">El acceso verifica tu identidad. Cuando Firestore esté configurado, tus instituciones y trayectorias se sincronizarán entre dispositivos con esta misma cuenta.</p>
+  <p class="eoe-auth-foot">El acceso verifica tu identidad. Tus instituciones y trayectorias se sincronizan entre dispositivos con esta misma cuenta. Las notas personales y la biblioteca permanecen en este dispositivo.</p>
  </section>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
