@@ -1,8 +1,7 @@
-
 {
-  "name": "Fortalecimiento de Trayectorias",
-  "short_name": "Fortalecimiento",
-  "description": "Sistema de seguimiento y fortalecimiento de trayectorias educativas.",
+  "name": "EOE en RED — Espacios que acompañan trayectorias",
+  "short_name": "EOE en RED",
+  "description": "Espacios que acompañan trayectorias educativas.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
