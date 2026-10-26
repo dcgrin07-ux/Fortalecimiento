@@ -1,4 +1,4 @@
-const CACHE_NAME = "fortalecimiento-v2";
+const CACHE_NAME = "eoe-en-red-v3";
 const APP_FILES = [
   "./",
   "./index.html",
