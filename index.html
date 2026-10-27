@@ -117,6 +117,14 @@ button,input,textarea,select{font-family:inherit}button{transition:transform .18
 .profile-options[open]>summary{margin-bottom:10px}
 @media(max-width:640px){.portal-grid-main{grid-template-columns:1fr}.portal-grid-main .portal-card{min-height:0}}
 </style>
+<style>
+.informe-guardado{margin:8px 0;padding:10px 12px;border:1px solid #dfe7f0;border-radius:10px;background:#fbfcfe}
+.informe-guardado>summary{cursor:pointer;color:#345f8c;font-weight:700}
+.informes-guardados{margin-top:14px;padding:12px 14px;border:1px solid #dfe7f0;border-radius:12px;background:#f8fafc}
+.informes-guardados>summary{cursor:pointer;color:#345f8c;font-weight:750}
+.informes-guardados[open]>.informe-guardado:first-of-type{margin-top:12px}
+#informe-aportes{min-height:110px;line-height:1.5}
+</style>
 </head>
 <body>
 <div id="app"></div>
@@ -423,50 +431,94 @@ async function accionCompartirEOE(metodo,titulo,texto){
     window.location.href="mailto:?subject="+encodeURIComponent(titulo||"EOE en RED")+"&body="+encodeURIComponent(texto||"");
   }
 }
-function textoInformeAlumnoEOE(id,curso){
+function valorInformeEOE(valor){
+  if(Array.isArray(valor))return valor.map(x=>String(x||"").trim()).filter(Boolean).join(", ");
+  return String(valor||"").trim();
+}
+function fechaInformeEOE(valor){
+  if(!valor)return "Sin fecha";
+  const fecha=new Date(String(valor).length===10?String(valor)+"T00:00:00":valor);
+  return Number.isNaN(fecha.getTime())?String(valor):fecha.toLocaleDateString("es-AR");
+}
+function construirInformeFormalEOE(id,curso,detalles,fechaEmision){
   const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
   if(!alumno)return "";
-  const lineas=["EOE en RED — Informe de seguimiento","Alumno: "+(alumno.nombre||"Sin nombre")];
-  if(db.nombreEscuela)lineas.push("Institución: "+db.nombreEscuela);
-  if(curso)lineas.push("Curso: "+curso);
-  lineas.push("Fecha de elaboración: "+new Date().toLocaleDateString("es-AR"));
-  if(alumno.proximoObjetivo)lineas.push("","Objetivo para el próximo encuentro:",alumno.proximoObjetivo);
   const historial=obtenerHistorial(id);
-  lineas.push("","Historial de seguimiento:");
-  if(!historial.length)lineas.push("Todavía no hay registros.");
+  const escuela=String(db.nombreEscuela||"Institución sin especificar").trim();
+  const fechaTexto=(fechaEmision||new Date()).toLocaleDateString("es-AR");
+  const fechas=historial.map(r=>String(r.f||"")).filter(Boolean).sort();
+  const periodo=fechas.length?(fechas.length===1?fechaInformeEOE(fechas[0]):fechaInformeEOE(fechas[0])+" al "+fechaInformeEOE(fechas[fechas.length-1])):"Sin registros fechados";
+  const lineas=[
+    "DIRECCIÓN GENERAL DE CULTURA Y EDUCACIÓN",
+    "DIRECCIÓN DE PSICOLOGÍA COMUNITARIA Y PEDAGOGÍA SOCIAL",
+    "EOE en RED",
+    "",
+    "INFORME DE SEGUIMIENTO DE LA TRAYECTORIA EDUCATIVA",
+    "",
+    "Institución: "+escuela,
+    "Estudiante: "+(alumno.nombre||"Sin nombre"),
+    "Curso: "+(curso||"Sin especificar"),
+    "Fecha de emisión: "+fechaTexto,
+    "Período de seguimiento registrado: "+periodo,
+    "",
+    "1. Propósito y alcance",
+    "El presente informe sistematiza la información disponible sobre el acompañamiento de la trayectoria educativa del/de la estudiante. Se elabora a partir de los registros cargados en la ficha y de los aportes complementarios incluidos para este documento.",
+    "",
+    "2. Desarrollo del seguimiento"
+  ];
+  if(!historial.length)lineas.push("No se registran intervenciones en la ficha al momento de la elaboración de este informe.");
   historial.forEach((r,i)=>{
-    lineas.push("","Registro "+(i+1)+" — "+(r.f||"Sin fecha"));
-    const agregar=(etiqueta,valor)=>{
-      if(Array.isArray(valor))valor=valor.join(", ");
-      if(valor!==undefined&&valor!==null&&String(valor).trim())lineas.push(etiqueta+": "+valor);
-    };
-    agregar("Actividad",r.a);
-    agregar("Áreas",r.areas);
-    agregar("Categoría observada",r.catObservada);
-    agregar("Escritura",r.escritura);
-    agregar("Lectura",r.lectura);
-    agregar("Comprensión",r.comprension);
-    agregar("Fortalezas y avances",r.fortalezas);
-    agregar("Dificultades o necesidades",r.dificultades);
-    agregar("Apoyo",r.apoyo);
-    agregar("Evolución",r.evolucion);
-    agregar("Continuar trabajando",r.continuar);
-    agregar("Observación",r.obsAbierta||r.obsCompromiso);
-    agregar("Próximo trabajo",r.proximo);
+    lineas.push("","Registro "+(i+1)+" — "+fechaInformeEOE(r.f));
+    const motivo=valorInformeEOE(r.motivo||alumno.motivo);
+    const actividad=valorInformeEOE(r.a);
+    const areas=valorInformeEOE(r.areas);
+    if(motivo)lineas.push("Motivo de seguimiento consignado: "+motivo+".");
+    if(actividad)lineas.push("En la instancia registrada se desarrolló la siguiente actividad o intervención: "+actividad+".");
+    if(areas)lineas.push("Áreas de trabajo consignadas: "+areas+".");
+    const indicadores=[];
+    if(valorInformeEOE(r.catObservada))indicadores.push("categoría observada: "+valorInformeEOE(r.catObservada));
+    if(valorInformeEOE(r.escritura))indicadores.push("escritura: "+valorInformeEOE(r.escritura));
+    if(valorInformeEOE(r.lectura))indicadores.push("lectura: "+valorInformeEOE(r.lectura));
+    if(valorInformeEOE(r.comprension))indicadores.push("comprensión: "+valorInformeEOE(r.comprension));
+    if(indicadores.length)lineas.push("En los indicadores de trayectoria registrados se consignó "+indicadores.join("; ")+".");
+    if(valorInformeEOE(r.fortalezas))lineas.push("Fortalezas y avances observados: "+valorInformeEOE(r.fortalezas)+".");
+    if(valorInformeEOE(r.dificultades))lineas.push("Dificultades o necesidades consignadas: "+valorInformeEOE(r.dificultades)+".");
+    if(valorInformeEOE(r.apoyo))lineas.push("Nivel de apoyo consignado: "+valorInformeEOE(r.apoyo)+".");
+    if(valorInformeEOE(r.evolucion))lineas.push("Evolución indicada en el registro: "+valorInformeEOE(r.evolucion)+".");
+    const observacion=valorInformeEOE(r.obsAbierta||r.obsCompromiso);
+    if(observacion)lineas.push("Observación profesional registrada: "+observacion);
+    const continuar=valorInformeEOE(r.continuar);
+    if(continuar)lineas.push("Aspectos propuestos para continuar trabajando: "+continuar+".");
+    if(valorInformeEOE(r.proximo))lineas.push("Próximas líneas de trabajo consignadas: "+valorInformeEOE(r.proximo)+".");
   });
-  const docs=(Array.isArray(alumno.documentos)?alumno.documentos:[]).filter(Boolean);
-  if(docs.length){
-    lineas.push("","Documentos vinculados:");
-    docs.forEach(doc=>lineas.push(doc.tipo==="archivo"
-      ? "Archivo adjunto: "+(doc.titulo||doc.nombreArchivo||"Archivo")+" (el archivo no se incluye en este texto)"
-      : (doc.titulo||"Enlace")+": "+(doc.url||"")));
+  const ultimo=historial.length?historial[historial.length-1]:null;
+  const objetivo=valorInformeEOE(alumno.proximoObjetivo);
+  const continuidad=ultimo?valorInformeEOE(ultimo.continuar):"";
+  const proximo=ultimo?valorInformeEOE(ultimo.proximo):"";
+  let numeroSeccion=3;
+  lineas.push("",""+(numeroSeccion++)+". Continuidad del acompañamiento");
+  if(objetivo)lineas.push("Objetivo de trabajo próximo consignado en la ficha: "+objetivo+".");
+  if(continuidad)lineas.push("Aspectos priorizados en el último registro: "+continuidad+".");
+  if(proximo)lineas.push("Líneas de trabajo consignadas en el último registro: "+proximo+".");
+  if(!objetivo&&!continuidad&&!proximo)lineas.push("No se consignaron objetivos de continuidad en los campos disponibles.");
+  const aporte=String(detalles||"").trim();
+  if(aporte)lineas.push("",(numeroSeccion++)+". Aportes complementarios del equipo profesional",aporte);
+  const documentos=(Array.isArray(alumno.documentos)?alumno.documentos:[]).filter(Boolean);
+  if(documentos.length){
+    lineas.push("",(numeroSeccion++)+". Documentación vinculada a la ficha");
+    documentos.forEach(doc=>lineas.push(doc.tipo==="archivo"
+      ? "Archivo adjunto disponible en la ficha: "+(doc.titulo||doc.nombreArchivo||"Archivo")+" (no se incorpora al documento descargado)."
+      : (doc.titulo||"Enlace a documento")+": "+(doc.url||"")));
   }
+  lineas.push("","Documento elaborado con los registros disponibles en la ficha de EOE en RED. Revisar y adecuar su contenido antes de compartirlo o incorporarlo a otras actuaciones.");
   return lineas.join("\n").trim();
 }
 function compartirInformeAlumnoEOE(metodo,id,curso){
   const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
   if(!alumno)return alert("No se encontró al alumno.");
-  accionCompartirEOE(metodo,"Informe de seguimiento — "+(alumno.nombre||"Alumno"),textoInformeAlumnoEOE(id,curso));
+  const detalles=document.getElementById("informe-aportes")?.value||"";
+  const texto=construirInformeFormalEOE(id,curso,detalles,new Date());
+  accionCompartirEOE(metodo,"Informe de seguimiento — "+(alumno.nombre||"Alumno"),texto);
 }
 function escaparTextoRTF(texto){
   let salida="";
@@ -486,25 +538,114 @@ function escaparTextoRTF(texto){
   }
   return salida;
 }
-function descargarInformeWordEOE(id,curso){
-  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
-  if(!alumno)return alert("No se encontró al alumno.");
-  const lineas=textoInformeAlumnoEOE(id,curso).split(/\r?\n/);
-  const contenido="{\\rtf1\\ansi\\deff0\\uc1{\\fonttbl{\\f0 Arial;}}\\viewkind4\\pard\\f0\\fs22 "+
-    lineas.map((linea,i)=>(i===0?"\\b\\fs32 ":"")+escaparTextoRTF(linea)+(i===0?"\\b0\\fs22":"")+"\\par").join("\n")+"}";
+function descargarTextoInformeWordEOE(texto,nombreAlumno,fechaISO){
+  const lineas=String(texto||"").split(/\r?\n/);
+  const contenido="{\\rtf1\\ansi\\deff0\\uc1{\\fonttbl{\\f0 Arial;}}\\viewkind4 "+
+    lineas.map((linea,i)=>{
+      if(!linea)return "\\pard\\sa100\\par";
+      const membrete=i<3;
+      const titulo=linea==="INFORME DE SEGUIMIENTO DE LA TRAYECTORIA EDUCATIVA";
+      const seccion=/^\d+\.\s/.test(linea);
+      const registro=/^Registro \d+/.test(linea);
+      const formato=membrete?"\\pard\\qc\\b\\fs18 ":titulo?"\\pard\\qc\\sb260\\sa260\\b\\fs30 ":seccion?"\\pard\\ql\\sb220\\sa100\\b\\fs24 ":registro?"\\pard\\ql\\sb160\\b\\fs22 ":"\\pard\\qj\\sa120\\fs22 ";
+      const cierre=membrete||titulo||seccion||registro?"\\b0":"";
+      return formato+escaparTextoRTF(linea)+cierre+"\\par";
+    }).join("\n")+"}";
   const archivo=new Blob([contenido],{type:"application/rtf;charset=utf-8"});
   const url=URL.createObjectURL(archivo);
   const enlace=document.createElement("a");
-  const nombre=(alumno.nombre||"alumno").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"_").replace(/^_+|_+$/g,"")||"alumno";
+  const nombre=String(nombreAlumno||"alumno").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"_").replace(/^_+|_+$/g,"")||"alumno";
   enlace.href=url;
-  enlace.download="Informe_"+nombre+"_"+new Date().toISOString().slice(0,10)+".rtf";
+  enlace.download="Informe_"+nombre+"_"+String(fechaISO||new Date().toISOString()).slice(0,10)+".rtf";
   document.body.appendChild(enlace);
   enlace.click();
   enlace.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-function accionesCompartirAlumnoHTML(id,curso){
-  return '<section class="ficha-box"><h3>📤 Compartir informe</h3><p class="small">Copialo o abrilo en WhatsApp o correo para revisarlo y enviarlo.</p><div class="share-actions"><button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar</button><button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button><button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button><button type="button" onclick="descargarInformeWordEOE('+jsArg(id)+','+jsArg(curso)+')">📄 Descargar documento Word</button></div></section>';
+function guardarYDescargarInformeAlumnoEOE(id,curso,turno,modo){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno)return alert("No se encontró al alumno.");
+  const detalles=document.getElementById("informe-aportes")?.value||"";
+  const fecha=new Date();
+  const informe={
+    id:crearId(),
+    fechaISO:fecha.toISOString(),
+    fechaTexto:fecha.toLocaleDateString("es-AR"),
+    institucion:String(db.nombreEscuela||""),
+    alumno:String(alumno.nombre||""),
+    curso:String(curso||""),
+    detalles:String(detalles),
+    texto:construirInformeFormalEOE(id,curso,detalles,fecha)
+  };
+  const teniaLista=Array.isArray(alumno.informesGenerados);
+  if(!teniaLista)alumno.informesGenerados=[];
+  alumno.informesGenerados.push(informe);
+  if(new Blob([JSON.stringify(db)]).size>700000){
+    alumno.informesGenerados.pop();
+    if(!teniaLista)delete alumno.informesGenerados;
+    alert("El informe supera el espacio disponible para guardarlo en la ficha. Se descargará el documento, pero no quedará guardado en la app.");
+    descargarTextoInformeWordEOE(informe.texto,informe.alumno,informe.fechaISO);
+    return;
+  }
+  if(!guardar()){
+    alumno.informesGenerados.pop();
+    if(!teniaLista)delete alumno.informesGenerados;
+    return;
+  }
+  descargarTextoInformeWordEOE(informe.texto,informe.alumno,informe.fechaISO);
+  refrescarFichaDocumentos(id,curso,turno,modo);
+  alert("El informe se guardó en la ficha del alumno y se descargó como archivo editable en Word.");
+}
+function descargarInformeGuardadoEOE(id,informeId){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  const informe=(alumno?.informesGenerados||[]).find(x=>String(x.id)===String(informeId));
+  if(!informe)return alert("No se encontró el informe guardado.");
+  descargarTextoInformeWordEOE(informe.texto,informe.alumno,informe.fechaISO);
+}
+function compartirInformeGuardadoEOE(metodo,id,informeId){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  const informe=(alumno?.informesGenerados||[]).find(x=>String(x.id)===String(informeId));
+  if(!informe)return alert("No se encontró el informe guardado.");
+  accionCompartirEOE(metodo,"Informe de seguimiento — "+(informe.alumno||"Alumno"),informe.texto||"");
+}
+function eliminarInformeGuardadoEOE(id,informeId,curso,turno,modo){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno||!Array.isArray(alumno.informesGenerados))return;
+  const indice=alumno.informesGenerados.findIndex(x=>String(x.id)===String(informeId));
+  if(indice<0)return;
+  if(!confirm("¿Eliminar este informe guardado de la ficha?"))return;
+  const [eliminado]=alumno.informesGenerados.splice(indice,1);
+  if(!guardar()){alumno.informesGenerados.splice(indice,0,eliminado);return;}
+  refrescarFichaDocumentos(id,curso,turno,modo);
+}
+function accionesCompartirAlumnoHTML(id,curso,turno,modo){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  const informes=alumno&&Array.isArray(alumno.informesGenerados)?alumno.informesGenerados.slice().reverse():[];
+  const items=informes.map(informe=>{
+    const fecha=esc(informe.fechaTexto||fechaInformeEOE(informe.fechaISO));
+    const cursoInforme=esc(informe.curso||"Curso sin especificar");
+    const escuelaInforme=esc(informe.institucion||"Institución sin especificar");
+    return '<details class="informe-guardado"><summary>'+fecha+' · '+escuelaInforme+' · '+cursoInforme+'</summary><div class="share-actions">'+
+      '<button type="button" onclick="descargarInformeGuardadoEOE('+jsArg(id)+','+jsArg(informe.id)+')">⬇ Descargar editable (.rtf)</button>'+
+      '<button type="button" onclick="compartirInformeGuardadoEOE(\'copiar\','+jsArg(id)+','+jsArg(informe.id)+')">Copiar</button>'+
+      '<button type="button" onclick="compartirInformeGuardadoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(informe.id)+')">WhatsApp</button>'+
+      '<button type="button" onclick="compartirInformeGuardadoEOE(\'correo\','+jsArg(id)+','+jsArg(informe.id)+')">Correo</button>'+
+      '<button type="button" onclick="eliminarInformeGuardadoEOE('+jsArg(id)+','+jsArg(informe.id)+','+jsArg(curso)+','+jsArg(turno)+','+jsArg(modo)+')">Eliminar</button>'+
+      '</div></details>';
+  }).join("");
+  return '<section class="ficha-box"><h3>📄 Informe de seguimiento</h3>'+
+    '<p class="small">Agregá contexto si hace falta. El documento lleva el membrete institucional y los datos de la escuela activa. Podés editar el archivo con Word.</p>'+
+    '<label for="informe-aportes">Aportes complementarios (opcional)</label>'+
+    '<textarea id="informe-aportes" rows="4" placeholder="Agregá antecedentes, acuerdos u observaciones que deban quedar en este informe..."></textarea>'+
+    '<div class="share-actions">'+
+      '<button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar texto</button>'+
+      '<button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button>'+
+      '<button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button>'+
+      '<button type="button" onclick="guardarYDescargarInformeAlumnoEOE('+jsArg(id)+','+jsArg(curso)+','+jsArg(turno)+','+jsArg(modo)+')">💾 Guardar y descargar editable (.rtf)</button>'+
+    '</div>'+
+    '<details class="informes-guardados"><summary>Informes guardados ('+informes.length+')</summary>'+
+      (informes.length?items:'<p class="small">Todavía no guardaste informes para este alumno.</p>')+
+    '</details></section>';
 }
 function accionCompartirInformeEOE(metodo){
   const titulo="Informe de EOE en RED"+(db&&db.nombreEscuela?" · "+db.nombreEscuela:"");
@@ -1505,7 +1646,7 @@ function abrirFichaOtro(id,c,t){
 
   document.getElementById("app").innerHTML=`
     <h2>👤 ${esc(a.nombre)}</h2>
-        ${accionesCompartirAlumnoHTML(id,c)}
+        ${accionesCompartirAlumnoHTML(id,c,t,'otro')}
     <div class="resumen-caja"><b>📌 Seguimiento individual</b><br>Este alumno no forma parte de las estadísticas de Fortalecimiento.</div>
     <div class="proximo">
       <h3>🎯 PRÓXIMO ENCUENTRO</h3>
@@ -1685,7 +1826,7 @@ function abrirFicha(id,c,t){
 
       document.getElementById("app").innerHTML=`
         <h2>👤 ${esc(a.nombre)}</h2>
-        ${accionesCompartirAlumnoHTML(id,c)}
+        ${accionesCompartirAlumnoHTML(id,c,t,'regular')}
         <div class="proximo">
           <h3>🎯 PRÓXIMO ENCUENTRO</h3>
           <textarea id="proximo-objetivo" placeholder="¿Qué querés trabajar en el próximo encuentro?">${esc(a.proximoObjetivo||"")}</textarea>
@@ -1759,7 +1900,7 @@ function abrirFicha(id,c,t){
 
     document.getElementById("app").innerHTML=`
       <h2>👤 ${esc(a.nombre)}</h2>
-        ${accionesCompartirAlumnoHTML(id,c)}
+        ${accionesCompartirAlumnoHTML(id,c,t,'regular')}
       ${proximoHtml}
       <div class="ficha-box">
         <details class="compact-details profile-options"><summary>⚙️ Opciones del alumno</summary>
