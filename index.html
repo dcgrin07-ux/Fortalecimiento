@@ -403,6 +403,54 @@ async function accionCompartirEOE(metodo,titulo,texto){
     window.location.href="mailto:?subject="+encodeURIComponent(titulo||"EOE en RED")+"&body="+encodeURIComponent(texto||"");
   }
 }
+function textoInformeAlumnoEOE(id,curso){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno)return "";
+  const lineas=["EOE en RED — Informe de seguimiento","Alumno: "+(alumno.nombre||"Sin nombre")];
+  if(db.nombreEscuela)lineas.push("Institución: "+db.nombreEscuela);
+  if(curso)lineas.push("Curso: "+curso);
+  lineas.push("Fecha de elaboración: "+new Date().toLocaleDateString("es-AR"));
+  if(alumno.proximoObjetivo)lineas.push("","Objetivo para el próximo encuentro:",alumno.proximoObjetivo);
+  const historial=obtenerHistorial(id);
+  lineas.push("","Historial de seguimiento:");
+  if(!historial.length)lineas.push("Todavía no hay registros.");
+  historial.forEach((r,i)=>{
+    lineas.push("","Registro "+(i+1)+" — "+(r.f||"Sin fecha"));
+    const agregar=(etiqueta,valor)=>{
+      if(Array.isArray(valor))valor=valor.join(", ");
+      if(valor!==undefined&&valor!==null&&String(valor).trim())lineas.push(etiqueta+": "+valor);
+    };
+    agregar("Actividad",r.a);
+    agregar("Áreas",r.areas);
+    agregar("Categoría observada",r.catObservada);
+    agregar("Escritura",r.escritura);
+    agregar("Lectura",r.lectura);
+    agregar("Comprensión",r.comprension);
+    agregar("Fortalezas y avances",r.fortalezas);
+    agregar("Dificultades o necesidades",r.dificultades);
+    agregar("Apoyo",r.apoyo);
+    agregar("Evolución",r.evolucion);
+    agregar("Continuar trabajando",r.continuar);
+    agregar("Observación",r.obsAbierta||r.obsCompromiso);
+    agregar("Próximo trabajo",r.proximo);
+  });
+  const docs=(Array.isArray(alumno.documentos)?alumno.documentos:[]).filter(Boolean);
+  if(docs.length){
+    lineas.push("","Documentos vinculados:");
+    docs.forEach(doc=>lineas.push(doc.tipo==="archivo"
+      ? "Archivo adjunto: "+(doc.titulo||doc.nombreArchivo||"Archivo")+" (el archivo no se incluye en este texto)"
+      : (doc.titulo||"Enlace")+": "+(doc.url||"")));
+  }
+  return lineas.join("\n").trim();
+}
+function compartirInformeAlumnoEOE(metodo,id,curso){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno)return alert("No se encontró al alumno.");
+  accionCompartirEOE(metodo,"Informe de seguimiento — "+(alumno.nombre||"Alumno"),textoInformeAlumnoEOE(id,curso));
+}
+function accionesCompartirAlumnoHTML(id,curso){
+  return '<section class="ficha-box"><h3>📤 Compartir informe</h3><p class="small">Copialo o abrilo en WhatsApp o correo para revisarlo y enviarlo.</p><div class="share-actions"><button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar</button><button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button><button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button></div></section>';
+}
 function accionCompartirInformeEOE(metodo){
   const titulo="Informe de EOE en RED"+(db&&db.nombreEscuela?" · "+db.nombreEscuela:"");
   accionCompartirEOE(metodo,titulo,textoPlanoInformeEOE());
@@ -1405,6 +1453,7 @@ function abrirFichaOtro(id,c,t){
 
   document.getElementById("app").innerHTML=`
     <h2>👤 ${esc(a.nombre)}</h2>
+        ${accionesCompartirAlumnoHTML(id,c)}
     <div class="resumen-caja"><b>📌 Seguimiento individual</b><br>Este alumno no forma parte de las estadísticas de Fortalecimiento.</div>
     <div class="proximo">
       <h3>🎯 PRÓXIMO ENCUENTRO</h3>
@@ -1581,6 +1630,7 @@ function abrirFicha(id,c,t){
 
       document.getElementById("app").innerHTML=`
         <h2>👤 ${esc(a.nombre)}</h2>
+        ${accionesCompartirAlumnoHTML(id,c)}
         <div class="proximo">
           <h3>🎯 PRÓXIMO ENCUENTRO</h3>
           <textarea id="proximo-objetivo" placeholder="¿Qué querés trabajar en el próximo encuentro?">${esc(a.proximoObjetivo||"")}</textarea>
@@ -1652,6 +1702,7 @@ function abrirFicha(id,c,t){
 
     document.getElementById("app").innerHTML=`
       <h2>👤 ${esc(a.nombre)}</h2>
+        ${accionesCompartirAlumnoHTML(id,c)}
       ${proximoHtml}
       <div class="ficha-box">
         <label>Editar nombre</label>
