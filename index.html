@@ -438,79 +438,83 @@ function valorInformeEOE(valor){
 function fechaInformeEOE(valor){
   if(!valor)return "Sin fecha";
   const fecha=new Date(String(valor).length===10?String(valor)+"T00:00:00":valor);
-  return Number.isNaN(fecha.getTime())?String(valor):fecha.toLocaleDateString("es-AR");
+  return Number.isNaN(fecha.getTime())?String(valor):fecha.toLocaleDateString("es-AR",{day:"numeric",month:"long",year:"numeric"});
 }
 function construirInformeFormalEOE(id,curso,detalles,fechaEmision){
   const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
   if(!alumno)return "";
   const historial=obtenerHistorial(id);
   const escuela=String(db.nombreEscuela||"Institución sin especificar").trim();
-  const fechaTexto=(fechaEmision||new Date()).toLocaleDateString("es-AR");
+  const fecha=(fechaEmision||new Date());
+  const fechaTexto=fecha.toLocaleDateString("es-AR",{day:"numeric",month:"long",year:"numeric"});
   const fechas=historial.map(r=>String(r.f||"")).filter(Boolean).sort();
   const periodo=fechas.length?(fechas.length===1?fechaInformeEOE(fechas[0]):fechaInformeEOE(fechas[0])+" al "+fechaInformeEOE(fechas[fechas.length-1])):"Sin registros fechados";
   const lineas=[
     "DIRECCIÓN GENERAL DE CULTURA Y EDUCACIÓN",
-    "DIRECCIÓN DE PSICOLOGÍA COMUNITARIA Y PEDAGOGÍA SOCIAL",
-    "EOE en RED",
+    "Modalidad de Psicología Comunitaria y Pedagogía Social",
+    escuela,
+    "",
+    String(db.localidad||db.ciudad||db.partido||"").trim()?String(db.localidad||db.ciudad||db.partido).trim()+", "+fechaTexto:fechaTexto,
     "",
     "INFORME DE SEGUIMIENTO DE LA TRAYECTORIA EDUCATIVA",
     "",
-    "Institución: "+escuela,
     "Estudiante: "+(alumno.nombre||"Sin nombre"),
-    "Curso: "+(curso||"Sin especificar"),
-    "Fecha de emisión: "+fechaTexto,
-    "Período de seguimiento registrado: "+periodo,
+    "Curso/espacio de seguimiento: "+(curso||"Sin especificar"),
+    "Período de seguimiento: "+periodo,
     "",
-    "1. Propósito y alcance",
-    "El presente informe sistematiza la información disponible sobre el acompañamiento de la trayectoria educativa del/de la estudiante. Se elabora a partir de los registros cargados en la ficha y de los aportes complementarios incluidos para este documento.",
-    "",
-    "2. Desarrollo del seguimiento"
+    historial.length?"En el marco del seguimiento de la trayectoria educativa de "+(alumno.nombre||"el/la estudiante")+", se registra "+(historial.length===1?"una intervención pedagógica":historial.length+" intervenciones pedagógicas")+".":"Al momento de la elaboración de este informe, la ficha no cuenta con registros de seguimiento."
   ];
-  if(!historial.length)lineas.push("No se registran intervenciones en la ficha al momento de la elaboración de este informe.");
   historial.forEach((r,i)=>{
-    lineas.push("","Registro "+(i+1)+" — "+fechaInformeEOE(r.f));
-    const motivo=valorInformeEOE(r.motivo||alumno.motivo);
+    const fechaRegistro=fechaInformeEOE(r.f);
     const actividad=valorInformeEOE(r.a);
     const areas=valorInformeEOE(r.areas);
-    if(motivo)lineas.push("Motivo de seguimiento consignado: "+motivo+".");
-    if(actividad)lineas.push("En la instancia registrada se desarrolló la siguiente actividad o intervención: "+actividad+".");
-    if(areas)lineas.push("Áreas de trabajo consignadas: "+areas+".");
-    const indicadores=[];
-    if(valorInformeEOE(r.catObservada))indicadores.push("categoría observada: "+valorInformeEOE(r.catObservada));
-    if(valorInformeEOE(r.escritura))indicadores.push("escritura: "+valorInformeEOE(r.escritura));
-    if(valorInformeEOE(r.lectura))indicadores.push("lectura: "+valorInformeEOE(r.lectura));
-    if(valorInformeEOE(r.comprension))indicadores.push("comprensión: "+valorInformeEOE(r.comprension));
-    if(indicadores.length)lineas.push("En los indicadores de trayectoria registrados se consignó "+indicadores.join("; ")+".");
-    if(valorInformeEOE(r.fortalezas))lineas.push("Fortalezas y avances observados: "+valorInformeEOE(r.fortalezas)+".");
-    if(valorInformeEOE(r.dificultades))lineas.push("Dificultades o necesidades consignadas: "+valorInformeEOE(r.dificultades)+".");
-    if(valorInformeEOE(r.apoyo))lineas.push("Nivel de apoyo consignado: "+valorInformeEOE(r.apoyo)+".");
-    if(valorInformeEOE(r.evolucion))lineas.push("Evolución indicada en el registro: "+valorInformeEOE(r.evolucion)+".");
+    const motivo=valorInformeEOE(r.motivo||alumno.motivo);
+    const apertura=[];
+    if(areas)apertura.push("en el área"+(areas.includes(",")?"s":"")+" de "+areas);
+    if(actividad)apertura.push("a partir de la actividad "+actividad);
+    if(apertura.length)lineas.push((i===0?"La intervención se desarrolló ":"En la intervención del "+fechaRegistro+" se trabajó ")+apertura.join(", ")+".");
+    else if(motivo)lineas.push("El registro del "+fechaRegistro+" se realizó en el marco de "+motivo+".");
+    const lectura=valorInformeEOE(r.lectura);
+    const comprension=valorInformeEOE(r.comprension);
+    const escritura=valorInformeEOE(r.escritura);
+    const categoria=valorInformeEOE(r.catObservada);
+    const apoyo=valorInformeEOE(r.apoyo);
+    const fortalezas=valorInformeEOE(r.fortalezas);
+    const dificultades=valorInformeEOE(r.dificultades);
+    const evolucion=valorInformeEOE(r.evolucion);
     const observacion=valorInformeEOE(r.obsAbierta||r.obsCompromiso);
-    if(observacion)lineas.push("Observación profesional registrada: "+observacion);
+    const frases=[];
+    if(lectura)frases.push("En relación con el desempeño lector, se consigna "+lectura+".");
+    if(comprension)frases.push("Respecto de la comprensión lectora, se registra "+comprension+".");
+    if(escritura)frases.push("En el área de Escritura, se consigna "+escritura+".");
+    if(categoria)frases.push("En los indicadores de trayectoria se registra "+categoria+".");
+    if(apoyo)frases.push("Durante la intervención, el/la estudiante requirió "+apoyo+".");
+    if(fortalezas)frases.push("Entre los aspectos favorables consignados se destaca "+fortalezas+".");
+    if(dificultades)frases.push("En cuanto a los aspectos que requieren acompañamiento, se señalan "+dificultades+".");
+    if(evolucion)frases.push("En el registro se describe la evolución como "+evolucion+".");
+    if(observacion)frases.push(observacion);
+    if(frases.length)lineas.push(frases.join(" "));
     const continuar=valorInformeEOE(r.continuar);
-    if(continuar)lineas.push("Aspectos propuestos para continuar trabajando: "+continuar+".");
-    if(valorInformeEOE(r.proximo))lineas.push("Próximas líneas de trabajo consignadas: "+valorInformeEOE(r.proximo)+".");
+    const proximo=valorInformeEOE(r.proximo);
+    if(continuar||proximo)lineas.push("Para dar continuidad al acompañamiento, se propone "+[continuar,proximo].filter(Boolean).join("; ")+".");
   });
-  const ultimo=historial.length?historial[historial.length-1]:null;
+  const aportes=String(detalles||"").trim();
+  if(aportes)lineas.push("",aportes);
   const objetivo=valorInformeEOE(alumno.proximoObjetivo);
+  const ultimo=historial.length?historial[historial.length-1]:null;
   const continuidad=ultimo?valorInformeEOE(ultimo.continuar):"";
   const proximo=ultimo?valorInformeEOE(ultimo.proximo):"";
-  let numeroSeccion=3;
-  lineas.push("",""+(numeroSeccion++)+". Continuidad del acompañamiento");
-  if(objetivo)lineas.push("Objetivo de trabajo próximo consignado en la ficha: "+objetivo+".");
-  if(continuidad)lineas.push("Aspectos priorizados en el último registro: "+continuidad+".");
-  if(proximo)lineas.push("Líneas de trabajo consignadas en el último registro: "+proximo+".");
-  if(!objetivo&&!continuidad&&!proximo)lineas.push("No se consignaron objetivos de continuidad en los campos disponibles.");
-  const aporte=String(detalles||"").trim();
-  if(aporte)lineas.push("",(numeroSeccion++)+". Aportes complementarios del equipo profesional",aporte);
+  const propuestas=[objetivo,continuidad,proximo].filter(Boolean);
+  if(propuestas.length){
+    lineas.push("","En función de lo registrado, se considera pertinente dar continuidad al acompañamiento, priorizando "+[...new Set(propuestas)].join("; ")+".");
+  }
   const documentos=(Array.isArray(alumno.documentos)?alumno.documentos:[]).filter(Boolean);
   if(documentos.length){
-    lineas.push("",(numeroSeccion++)+". Documentación vinculada a la ficha");
+    lineas.push("","Documentación vinculada");
     documentos.forEach(doc=>lineas.push(doc.tipo==="archivo"
       ? "Archivo adjunto disponible en la ficha: "+(doc.titulo||doc.nombreArchivo||"Archivo")+" (no se incorpora al documento descargado)."
       : (doc.titulo||"Enlace a documento")+": "+(doc.url||"")));
   }
-  lineas.push("","Documento elaborado con los registros disponibles en la ficha de EOE en RED. Revisar y adecuar su contenido antes de compartirlo o incorporarlo a otras actuaciones.");
   return lineas.join("\n").trim();
 }
 function compartirInformeAlumnoEOE(metodo,id,curso){
@@ -545,10 +549,11 @@ function descargarTextoInformeWordEOE(texto,nombreAlumno,fechaISO){
       if(!linea)return "\\pard\\sa100\\par";
       const membrete=i<3;
       const titulo=linea==="INFORME DE SEGUIMIENTO DE LA TRAYECTORIA EDUCATIVA";
+      const fechaDocumento=i===4;
       const seccion=/^\d+\.\s/.test(linea);
       const registro=/^Registro \d+/.test(linea);
-      const formato=membrete?"\\pard\\qc\\b\\fs18 ":titulo?"\\pard\\qc\\sb260\\sa260\\b\\fs30 ":seccion?"\\pard\\ql\\sb220\\sa100\\b\\fs24 ":registro?"\\pard\\ql\\sb160\\b\\fs22 ":"\\pard\\qj\\sa120\\fs22 ";
-      const cierre=membrete||titulo||seccion||registro?"\\b0":"";
+      const formato=membrete?"\\pard\\qc\\b\\fs18 ":fechaDocumento?"\\pard\\qr\\sa180\\fs22 ":titulo?"\\pard\\qc\\sb260\\sa260\\b\\fs30 ":seccion?"\\pard\\ql\\sb220\\sa100\\b\\fs24 ":registro?"\\pard\\ql\\sb160\\b\\fs22 ":"\\pard\\qj\\sa120\\fs22 ";
+      const cierre=membrete||fechaDocumento||titulo||seccion||registro?"\\b0":"";
       return formato+escaparTextoRTF(linea)+cierre+"\\par";
     }).join("\n")+"}";
   const archivo=new Blob([contenido],{type:"application/rtf;charset=utf-8"});
@@ -635,8 +640,8 @@ function accionesCompartirAlumnoHTML(id,curso,turno,modo){
   }).join("");
   return '<section class="ficha-box"><h3>📄 Informe de seguimiento</h3>'+
     '<p class="small">Agregá contexto si hace falta. El documento lleva el membrete institucional y los datos de la escuela activa. Podés editar el archivo con Word.</p>'+
-    '<label for="informe-aportes">Aportes complementarios (opcional)</label>'+
-    '<textarea id="informe-aportes" rows="4" placeholder="Agregá antecedentes, acuerdos u observaciones que deban quedar en este informe..."></textarea>'+
+    '<label for="informe-aportes">Aportes del equipo para integrar en el informe (opcional)</label>'+
+    '<textarea id="informe-aportes" rows="4" placeholder="Escribí en tono narrativo la información que querés incorporar; por ejemplo, aspectos observados, acuerdos o líneas de trabajo..."></textarea>'+
     '<div class="share-actions">'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar texto</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button>'+
