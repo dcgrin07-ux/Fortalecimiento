@@ -97,6 +97,26 @@ button,input,textarea,select{font-family:inherit}button{transition:transform .18
 @media(max-width:520px){.eoe-contexto-activo{gap:8px;padding:10px}.eoe-contexto-activo .eoe-contexto-icono{width:36px;height:36px;flex-basis:36px}.eoe-contexto-activo button{font-size:12px;padding:9px 10px}.eoe-contexto-activo strong{font-size:14px}}
 </style>
 
+<style>
+.portal-grid-main .portal-card{min-height:190px}
+.portal-more{margin-top:18px;padding:0 18px;background:#ffffffd9;border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 16px #1c3b5c08}
+.portal-more>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 2px;cursor:pointer;color:var(--ink)}
+.portal-more>summary::-webkit-details-marker{display:none}
+.portal-more>summary strong{display:block;font-size:15px}
+.portal-more>summary small{display:block;margin-top:3px;color:var(--muted);font-size:12px}
+.details-indicator{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#edf3f8;color:#3978b9;font-size:19px;font-weight:500;transition:transform .18s}
+.portal-more[open] .details-indicator{transform:rotate(45deg)}
+.portal-more .portal-grid{padding-bottom:16px}
+.compact-details{margin:12px 0}
+.compact-details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;background:#f7f9fc;border:1px solid #dfe7f0;border-radius:12px;color:var(--ink);font-weight:750;cursor:pointer}
+.compact-details>summary::-webkit-details-marker{display:none}
+.compact-details>summary::after{content:"＋";color:#3a77b9;font-size:18px}
+.compact-details[open]>summary::after{content:"−"}
+.registro-panel[open]>summary{margin-bottom:12px}
+.historial-panel>div{padding:8px 0}
+.profile-options[open]>summary{margin-bottom:10px}
+@media(max-width:640px){.portal-grid-main{grid-template-columns:1fr}.portal-grid-main .portal-card{min-height:0}}
+</style>
 </head>
 <body>
 <div id="app"></div>
@@ -839,15 +859,12 @@ function mostrarInicio(){
  <div class="portal-wrap">
   <header class="portal-header"><div class="portal-brand"><div class="portal-logo">ER</div><div><div class="portal-name">EOE <span>en RED</span></div><div class="portal-sub">Espacios que acompañan trayectorias</div></div></div><div class="portal-user"><span class="status-dot"></span> Cuenta conectada</div></header>
   <section class="portal-hero"><div><div class="eyebrow">PLATAFORMA DE TRABAJO EDUCATIVO</div><h1>Un espacio para acompañar,<br><span>registrar y construir en red.</span></h1><p>Organizá tus materiales, tus escritos y el trabajo de cada institución desde un mismo lugar.</p></div><div class="hero-symbol">✳</div></section>
-  <div class="portal-section-title"><div><h2>¿Dónde querés trabajar?</h2><p>Elegí un espacio para continuar.</p></div><span class="portal-mini-tag">EOE · RED</span></div>
-  <section class="portal-grid">
-   <button class="portal-card card-personal" onclick="mostrarEspacioPersonalEOE()"><span class="card-icon">✎</span><span class="card-kicker">PRIVADO</span><strong>Mi espacio personal</strong><span class="card-desc">Notas, calendario, ideas, escritos y borradores privados.</span><span class="card-link">Entrar al espacio <b>↗</b></span></button>
-   <button class="portal-card card-instituciones card-instituciones-principal" onclick="mostrarInstitucionesEOE()"><span class="card-icon">⌂</span><span class="card-kicker">TU ESPACIO DE TRABAJO</span><strong>Mis instituciones</strong><span class="card-desc">Elegí una escuela. La institución activa identificará el contexto de trabajo y sus trayectorias.</span><span class="card-link">Elegir institución <b>↗</b></span></button>
-   <button class="portal-card card-biblioteca" onclick="mostrarGuiaRecursos()"><span class="card-icon">▤</span><span class="card-kicker">RECURSOS</span><strong>Biblioteca de materiales</strong><span class="card-desc">Recursos y estrategias organizados por Inicial, Primario, Secundario y compartidos.</span><span class="card-link">Abrir biblioteca <b>↗</b></span></button>
-   <button class="portal-card card-trayectorias" onclick="abrirTrayectoriasInstitucionActivaEOE()"><span class="card-icon">◎</span><span class="card-kicker">SEGUIMIENTO</span><strong>Trayectorias educativas</strong><span class="card-desc">Acceso directo a cursos, alumnos, intervenciones e historiales de la institución activa.</span><span class="card-link">Abrir seguimiento <b>↗</b></span></button>
-   <button class="portal-card card-equipo" onclick="mostrarAdministracionEOE()"><span class="card-icon">♧</span><span class="card-kicker">ORGANIZACIÓN</span><strong>Gestión institucional</strong><span class="card-desc">Administrá localmente las instituciones que querés tener visibles en el portal.</span><span class="card-link">Gestionar espacios <b>↗</b></span></button>
-   <button class="portal-card card-informes" onclick="mostrarEstadisticas()"><span class="card-icon">▥</span><span class="card-kicker">INFORMACIÓN</span><strong>Estadísticas e informes</strong><span class="card-desc">Consultá los datos que ya registra el módulo de trayectorias.</span><span class="card-link">Ver estadísticas <b>↗</b></span></button>
-  </section>
+  <div class="portal-section-title"><div><h2>¿Dónde querés trabajar?</h2><p>Empezá por elegir una institución; después abrí sus trayectorias.</p></div><span class="portal-mini-tag">EOE · RED</span></div>
+  <section class="portal-grid portal-grid-main"><button class="portal-card card-instituciones card-instituciones-principal" onclick="mostrarInstitucionesEOE()"><span class="card-icon">⌂</span><span class="card-kicker">TU ESPACIO DE TRABAJO</span><strong>Mis instituciones</strong><span class="card-desc">Elegí una escuela. La institución activa identificará el contexto de trabajo y sus trayectorias.</span><span class="card-link">Elegir institución <b>↗</b></span></button><button class="portal-card card-trayectorias" onclick="abrirTrayectoriasInstitucionActivaEOE()"><span class="card-icon">◎</span><span class="card-kicker">SEGUIMIENTO</span><strong>Trayectorias educativas</strong><span class="card-desc">Acceso directo a cursos, alumnos, intervenciones e historiales de la institución activa.</span><span class="card-link">Abrir seguimiento <b>↗</b></span></button></section>
+  <details class="portal-more">
+   <summary><span><strong>Más herramientas</strong><small>Espacio personal, biblioteca, gestión e informes.</small></span><b class="details-indicator" aria-hidden="true">＋</b></summary>
+   <section class="portal-grid"><button class="portal-card card-personal" onclick="mostrarEspacioPersonalEOE()"><span class="card-icon">✎</span><span class="card-kicker">PRIVADO</span><strong>Mi espacio personal</strong><span class="card-desc">Notas, calendario, ideas, escritos y borradores privados.</span><span class="card-link">Entrar al espacio <b>↗</b></span></button><button class="portal-card card-biblioteca" onclick="mostrarGuiaRecursos()"><span class="card-icon">▤</span><span class="card-kicker">RECURSOS</span><strong>Biblioteca de materiales</strong><span class="card-desc">Recursos y estrategias organizados por Inicial, Primario, Secundario y compartidos.</span><span class="card-link">Abrir biblioteca <b>↗</b></span></button><button class="portal-card card-equipo" onclick="mostrarAdministracionEOE()"><span class="card-icon">♧</span><span class="card-kicker">ORGANIZACIÓN</span><strong>Gestión institucional</strong><span class="card-desc">Administrá localmente las instituciones que querés tener visibles en el portal.</span><span class="card-link">Gestionar espacios <b>↗</b></span></button><button class="portal-card card-informes" onclick="mostrarEstadisticas()"><span class="card-icon">▥</span><span class="card-kicker">INFORMACIÓN</span><strong>Estadísticas e informes</strong><span class="card-desc">Consultá los datos que ya registra el módulo de trayectorias.</span><span class="card-link">Ver estadísticas <b>↗</b></span></button></section>
+  </details>
   <section class="portal-bottom"><div class="bottom-mark">i</div><div><strong>Tu trabajo, organizado en un solo lugar.</strong><p>Las instituciones y trayectorias se sincronizan con Firebase en esta cuenta. Las notas personales y la biblioteca siguen guardándose en este dispositivo.</p></div></section>
   <footer class="portal-footer"><span>EOE en RED</span><span>Instituciones y trayectorias · sincronización con Firebase</span><button onclick="descargarBackup()">Descargar copia de seguridad ↗</button></footer>
  </div>`;
@@ -1496,6 +1513,7 @@ function abrirFichaOtro(id,c,t){
       <button style="background:#f39c12" onclick="guardarProximoObjetivoOtro(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar objetivo</button>
     </div>
     <div class="ficha-box">
+      <details class="compact-details profile-options"><summary>⚙️ Opciones del alumno</summary>
       <label>Editar nombre</label>
       <input id="nom-otro" value="${esc(a.nombre)}">
       <label>Motivo principal del seguimiento</label>
@@ -1506,6 +1524,8 @@ function abrirFichaOtro(id,c,t){
       <button onclick="cambiarActivoOtro(${jsArg(id)},${jsArg(c)},${jsArg(t)})" style="background:${a.activo===true?"#c0392b":"#27ae60"}">${a.activo===true?"🚫 Inactivar Alumno":"✅ Reincorporar Alumno"}</button>
       ${htmlMoverCurso(id)}
 
+      </details>
+      <details class="compact-details registro-panel"><summary>＋ Registrar intervención</summary>
       <h3>📝 Nueva intervención</h3>
       <label>Fecha</label><input type="date" id="otro-fecha" value="${new Date().toISOString().split("T")[0]}">
       <label>Intervención realizada</label><textarea id="otro-actividad" placeholder="Describí la intervención realizada..."></textarea>
@@ -1521,12 +1541,12 @@ function abrirFichaOtro(id,c,t){
       >
       <label>Evolución</label>
       <select id="otro-evolucion"><option>Se mantiene</option><option>Avanza</option><option>Presenta retroceso</option></select>
-      <button style="background:#27ae60" onclick="guardarRegistroOtro(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar intervención</button>
+      <button style="background:#27ae60" onclick="guardarRegistroOtro(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar intervención</button></details>
       <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar seguimiento</button>
       <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
     </div>
-    <h3>📜 Historial (${hist.length})</h3>
-    ${histHtml||'<p class="small">No hay intervenciones registradas todavía.</p>'}`;
+    <details class="compact-details historial-panel"><summary>📜 Historial anterior — ${hist.length} registros</summary>
+    ${histHtml||'<p class="small">No hay intervenciones registradas todavía.</p>'}</details>`;
   insertarDocumentosAlumno(id,c,t,'otro');
 }
 
@@ -1672,6 +1692,7 @@ function abrirFicha(id,c,t){
           <button style="background:#f39c12" onclick="guardarProximoObjetivo(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar objetivo</button>
         </div>
         <div class="ficha-box">
+          <details class="compact-details profile-options"><summary>⚙️ Opciones del alumno</summary>
           <label>Editar nombre</label>
           <input id="nom" value="${esc(a.nombre)}">
           <button onclick="guardarNombre(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar Nombre</button>
@@ -1682,7 +1703,8 @@ function abrirFicha(id,c,t){
           <select id="flex-cat">
             ${catOrder.map(x=>`<option value="${esc(x)}" ${a.cat===x?"selected":""}>${esc(catInfo[x][0])}</option>`).join("")}
           </select>
-
+          </details>
+          <details class="compact-details registro-panel"><summary>＋ Registrar una intervención</summary>
           <h3>📝 Nuevo Registro Abierto</h3>
           <div class="seccion-formulario">
             <label>Fecha</label><input type="date" id="flex-fecha" value="${new Date().toISOString().split("T")[0]}">
@@ -1692,12 +1714,12 @@ function abrirFicha(id,c,t){
             <label>Observación profesional</label><textarea id="flex-obs" placeholder="Registro abierto..."></textarea>
             <label>🎯 Qué continuar trabajando</label><textarea id="flex-proximo" placeholder="Aspectos a retomar o fortalecer..."></textarea>
             <button id="btn-flex" style="background:#27ae60" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar Registro Definitivamente</button>
-          </div>
+          </div></details>
           <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar Alumno</button>
           <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
         </div>
-        <h3>📜 Historial Completo (${histFlex.length} registros)</h3>
-        ${histHtmlFlex||'<p class="small">No hay registros todavía.</p>'}
+        <details class="compact-details historial-panel"><summary>📜 Historial anterior — ${histFlex.length} registros</summary>
+        ${histHtmlFlex||'<p class="small">No hay registros todavía.</p>'}</details>
       `;
       insertarDocumentosAlumno(id,c,t,'regular');
       return;
@@ -1740,7 +1762,7 @@ function abrirFicha(id,c,t){
         ${accionesCompartirAlumnoHTML(id,c)}
       ${proximoHtml}
       <div class="ficha-box">
-        <label>Editar nombre</label>
+        <details class="compact-details profile-options"><summary>⚙️ Opciones del alumno</summary>
         <input id="nom" value="${esc(a.nombre)}">
         <button onclick="guardarNombre(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar Nombre</button>
 
@@ -1761,10 +1783,12 @@ function abrirFicha(id,c,t){
           <button style="background:#8e44ad">🌐 Generar Informe con ChatGPT</button>
         </a>
 
+        </details>
         <h3>📊 Resumen</h3>
         ${resumenHtml}
 
         <hr>
+        <details class="compact-details registro-panel"><summary>＋ Registrar seguimiento</summary>
         <h3>⚡ Nuevo Registro de Seguimiento</h3>
         <div class="seccion-formulario">
           <label>Fecha de trabajo</label>
@@ -1832,14 +1856,14 @@ function abrirFicha(id,c,t){
 
           <button id="btn-guardar-reg" onclick="guardarRegistroEstructurado(${jsArg(id)},${jsArg(c)},${jsArg(t)})" style="background:#27ae60;font-size:16px;padding:15px">💾 GUARDAR REGISTRO DEFINITIVAMENTE</button>
           <p class="small">El historial anterior se conserva. Cada guardado agrega un nuevo registro.</p>
-        </div>
+        </div></details>
 
         <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar Alumno</button>
         <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
       </div>
 
-      <h3>📜 Historial Completo (${hist.length} registros)</h3>
-      <div>${histHtml||'<p class="small">No hay registros todavía.</p>'}</div>
+      <details class="compact-details historial-panel"><summary>📜 Historial anterior — ${hist.length} registros</summary>
+      <div>${histHtml||'<p class="small">No hay registros todavía.</p>'}</div></details>
     `;
     calcularEvolucionAutomatica(id);
     insertarDocumentosAlumno(id,c,t,'regular');
