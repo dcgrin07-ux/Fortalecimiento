@@ -1460,9 +1460,9 @@ function verDetalle(c,t){
   if(!db.datosCurso[c])db.datosCurso[c]={total:0,fort:0};
   const alumnos=db.listaAlumnos.filter(a=>a.curso===c);
   const activos=alumnos.filter(a=>a.activo!==false);
-  const alumnosFort=activos.filter(a=>a.tipoSeguimiento!=="otro").length;
-  const alumnosSeguimiento=activos.filter(a=>a.tipoSeguimiento==="otro").length;
   const esPrimario=db.nivelInstitucion==="Primario";
+  const alumnosFort=esPrimario?activos.filter(a=>a.tipoSeguimiento!=="otro").length:0;
+  const alumnosSeguimiento=esPrimario?activos.filter(a=>a.tipoSeguimiento==="otro").length:activos.length;
   document.getElementById("app").innerHTML=`
     <h2>Curso: ${esc(c)}</h2>
     <div class="stats-box">
