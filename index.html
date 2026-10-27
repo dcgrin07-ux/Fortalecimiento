@@ -448,8 +448,43 @@ function compartirInformeAlumnoEOE(metodo,id,curso){
   if(!alumno)return alert("No se encontró al alumno.");
   accionCompartirEOE(metodo,"Informe de seguimiento — "+(alumno.nombre||"Alumno"),textoInformeAlumnoEOE(id,curso));
 }
+function escaparTextoRTF(texto){
+  let salida="";
+  for(const caracter of String(texto||"")){
+    if(caracter==="\\")salida+="\\\\";
+    else if(caracter==="{")salida+="\\{";
+    else if(caracter==="}")salida+="\\}";
+    else{
+      const codigo=caracter.codePointAt(0);
+      if(codigo<128)salida+=caracter;
+      else if(codigo<=65535)salida+="\\u"+(codigo>32767?codigo-65536:codigo)+"?";
+      else{
+        const punto=codigo-65536,alto=55296+(punto>>10),bajo=56320+(punto&1023);
+        salida+="\\u"+(alto>32767?alto-65536:alto)+"?\\u"+(bajo>32767?bajo-65536:bajo)+"?";
+      }
+    }
+  }
+  return salida;
+}
+function descargarInformeWordEOE(id,curso){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno)return alert("No se encontró al alumno.");
+  const lineas=textoInformeAlumnoEOE(id,curso).split(/\r?\n/);
+  const contenido="{\\rtf1\\ansi\\deff0\\uc1{\\fonttbl{\\f0 Arial;}}\\viewkind4\\pard\\f0\\fs22 "+
+    lineas.map((linea,i)=>(i===0?"\\b\\fs32 ":"")+escaparTextoRTF(linea)+(i===0?"\\b0\\fs22":"")+"\\par").join("\n")+"}";
+  const archivo=new Blob([contenido],{type:"application/rtf;charset=utf-8"});
+  const url=URL.createObjectURL(archivo);
+  const enlace=document.createElement("a");
+  const nombre=(alumno.nombre||"alumno").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"_").replace(/^_+|_+$/g,"")||"alumno";
+  enlace.href=url;
+  enlace.download="Informe_"+nombre+"_"+new Date().toISOString().slice(0,10)+".rtf";
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function accionesCompartirAlumnoHTML(id,curso){
-  return '<section class="ficha-box"><h3>📤 Compartir informe</h3><p class="small">Copialo o abrilo en WhatsApp o correo para revisarlo y enviarlo.</p><div class="share-actions"><button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar</button><button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button><button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button></div></section>';
+  return '<section class="ficha-box"><h3>📤 Compartir informe</h3><p class="small">Copialo o abrilo en WhatsApp o correo para revisarlo y enviarlo.</p><div class="share-actions"><button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar</button><button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button><button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button><button type="button" onclick="descargarInformeWordEOE('+jsArg(id)+','+jsArg(curso)+')">📄 Descargar documento Word</button></div></section>';
 }
 function accionCompartirInformeEOE(metodo){
   const titulo="Informe de EOE en RED"+(db&&db.nombreEscuela?" · "+db.nombreEscuela:"");
