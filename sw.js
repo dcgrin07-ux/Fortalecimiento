@@ -1,4 +1,4 @@
-const CACHE_NAME = "eoe-en-red-v10";
+const CACHE_NAME = "eoe-en-red-v11";
 const APP_FILES = [
   "./",
   "./index.html",
