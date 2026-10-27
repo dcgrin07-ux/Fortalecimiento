@@ -815,7 +815,7 @@ function mostrarEstadisticas(){
       ${alumnosFortInstitucional.length>matriculaInstitucional?'<p class="alerta">Atención: hay más alumnos registrados en Fortalecimiento que matrícula cargada. Revisá los totales de los cursos.</p>':''}
     </div>
     <div class="stats-box" style="border-left:5px solid #c47b22"><h4 style="margin-top:0">🟡 Seguimiento de trayectorias · fuera de Fortalecimiento</h4><p>Alumnos activos en seguimiento: <b>${alumnosSeguimientoInstitucional.length}</b></p><p class="small">Este recuento se muestra por separado y no se suma a las categorías ni a las estadísticas de Fortalecimiento.</p></div>
-    <h3>📚 Estadísticas por año escolar</h3>
+    <h3>📚 Estadísticas por año escolar</h3>`;
   if(!s.porAnio.length) html+=`<div class="alerta">Todavía no hay cursos con año escolar identificable. Entrá en Cursos y usá ⚙️ Año/división para configurarlos.</div>`;
   s.porAnio.forEach(g=>{
     const matricula=g.matriculaTotal;
