@@ -771,10 +771,11 @@ function calcularEstadisticas(){
     // Fortalecimiento cuenta alumnos únicos activos efectivamente registrados en cursos
     // de esa modalidad; excluye los seguimientos individuales por otras causas.
     const alumnosFort=alumnosAnio.filter(a=>normalizarTipoCurso(a.curso)==="fortalecimiento" && a.tipoSeguimiento!=="otro");
+    const alumnosSeguimiento=alumnosAnio.filter(a=>a.tipoSeguimiento==="otro");
     const categorias={}; catOrder.forEach(id=>categorias[id]=0);
     alumnosFort.forEach(a=>{if(categorias[a.cat]!==undefined)categorias[a.cat]++;});
     const clasificados=Object.values(categorias).reduce((a,b)=>a+b,0);
-    return {anio,cursos:cursosAnio,alumnos:alumnosAnio,matriculaTotal,alumnosFort,categorias,clasificados};
+    return {anio,cursos:cursosAnio,alumnos:alumnosAnio,matriculaTotal,alumnosFort,alumnosSeguimiento,categorias,clasificados};
   });
   return {cursos,todos,activos,anios,porAnio};
 }
@@ -784,7 +785,7 @@ function mostrarEstadisticas(){
     const activos=(db.listaAlumnos||[]).filter(a=>a.activo!==false);
     const cursos=obtenerTodosLosCursos();
     const porCurso=cursos.map(c=>({c,n:activos.filter(a=>a.curso===c).length})).filter(x=>x.n>0);
-    document.getElementById("app").innerHTML=`<h2>📊 Estadísticas</h2><button class="volver" onclick="mostrarInicio()">← Volver</button><div class="share-actions share-report-actions"><button onclick="accionCompartirInformeEOE('copiar')">Copiar informe</button><button onclick="accionCompartirInformeEOE('whatsapp')">WhatsApp</button><button onclick="accionCompartirInformeEOE('correo')">Correo</button></div>
+    document.getElementById("app").innerHTML=`<h2>📊 Seguimiento de trayectorias · ${esc(db.nivelInstitucion)}</h2><button class="volver" onclick="mostrarInicio()">← Volver</button><div class="share-actions share-report-actions"><button onclick="accionCompartirInformeEOE('copiar')">Copiar informe</button><button onclick="accionCompartirInformeEOE('whatsapp')">WhatsApp</button><button onclick="accionCompartirInformeEOE('correo')">Correo</button></div>
       <div class="stats-box"><h3 style="margin-top:0">${nivelIcono(db.nivelInstitucion)} ${esc(db.nivelInstitucion)}</h3><p style="font-size:20px">👥 Alumnos activos: <b>${activos.length}</b></p></div>
       <h3>📚 Distribución por curso</h3>${porCurso.map(x=>`<div class="resumen-caja"><b>${esc(x.c)}</b><br>${x.n} alumno(s)</div>`).join("")||'<p class="small">Todavía no hay alumnos cargados.</p>'}`;
     return;
@@ -798,6 +799,7 @@ function mostrarEstadisticas(){
   const alumnosFortInstitucional=s.activos.filter(a=>
     s.cursos.includes(a.curso) && normalizarTipoCurso(a.curso)==="fortalecimiento" && a.tipoSeguimiento!=="otro"
   );
+  const alumnosSeguimientoInstitucional=s.activos.filter(a=>s.cursos.includes(a.curso)&&a.tipoSeguimiento==="otro");
   const restantesInstitucional=Math.max(0,matriculaInstitucional-alumnosFortInstitucional.length);
   const pctInstitucional=matriculaInstitucional?(alumnosFortInstitucional.length/matriculaInstitucional*100).toFixed(1):"0.0";
   let html=`<h2>📊 Estadísticas actuales</h2><button class="volver" onclick="mostrarInicio()">← Volver</button><div class="share-actions share-report-actions"><button onclick="accionCompartirInformeEOE('copiar')">Copiar informe</button><button onclick="accionCompartirInformeEOE('whatsapp')">WhatsApp</button><button onclick="accionCompartirInformeEOE('correo')">Correo</button></div>
@@ -811,7 +813,8 @@ function mostrarEstadisticas(){
       ${matriculaInstitucional===0?'<p class="small">Atención: falta cargar la matrícula total en los datos de los cursos.</p>':''}
       ${alumnosFortInstitucional.length>matriculaInstitucional?'<p class="alerta">Atención: hay más alumnos registrados en Fortalecimiento que matrícula cargada. Revisá los totales de los cursos.</p>':''}
     </div>
-    <h3>📚 Estadísticas por año escolar</h3>`;
+    <div class="stats-box" style="border-left:5px solid #c47b22"><h4 style="margin-top:0">🟡 Seguimiento de trayectorias · fuera de Fortalecimiento</h4><p>Alumnos activos en seguimiento: <b>${alumnosSeguimientoInstitucional.length}</b></p><p class="small">Este recuento se muestra por separado y no se suma a las categorías ni a las estadísticas de Fortalecimiento.</p></div>
+    <h3>📚 Estadísticas por año escolar</h3>
   if(!s.porAnio.length) html+=`<div class="alerta">Todavía no hay cursos con año escolar identificable. Entrá en Cursos y usá ⚙️ Año/división para configurarlos.</div>`;
   s.porAnio.forEach(g=>{
     const matricula=g.matriculaTotal;
@@ -825,6 +828,7 @@ function mostrarEstadisticas(){
       <p style="font-size:16px;margin:8px 0">📈 Porcentaje de matrícula en Fortalecimiento: <b>${pct}%</b></p>
       ${matricula===0?'<p class="small">Atención: falta cargar la matrícula total en los datos de los cursos de este año.</p>':''}
       ${g.alumnosFort.length>matricula?'<p class="alerta">Atención: hay más alumnos registrados en Fortalecimiento que matrícula cargada. Revisá los totales de los cursos.</p>':''}</div>
+      <div class="stats-box" style="border-left:5px solid #c47b22"><h4 style="margin-top:0">🟡 Seguimiento de trayectorias · fuera de Fortalecimiento</h4><p>Alumnos activos: <b>${g.alumnosSeguimiento.length}</b></p><p class="small">Se informa por separado; no integra las categorías ni los porcentajes de Fortalecimiento.</p></div>
       <h3>🟢 Categorías de Fortalecimiento · ${g.anio}.º año</h3>
       <div class="resumen-caja"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:7px">Categoría</th><th style="padding:7px">Cantidad</th></tr></thead><tbody>${filas}</tbody></table>
       <p><b>Total clasificado en categorías:</b> ${g.clasificados} de ${g.alumnosFort.length} alumnos registrados en Fortalecimiento.</p>
@@ -848,7 +852,7 @@ function buscarAlumnoGlobal(){
   }
   box.innerHTML=resultados.map(a=>{
     const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"";
-    const tipo=a.tipoSeguimiento==="otro"?"📌 Seguimiento individual":(esCursoFlexible(a.curso)?"🟡 Seguimiento flexible":"🟢 Fortalecimiento");
+    const tipo=a.tipoSeguimiento==="otro"?"🟡 Seguimiento de trayectorias":"🟢 Fortalecimiento";
     const cat=a.tipoSeguimiento==="otro"?"":(catInfo[a.cat]?catInfo[a.cat][0]:a.cat||"");
     const accion=a.tipoSeguimiento==="otro"?`abrirFichaOtro(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`:`abrirFicha(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`;
     return `<div class="resumen-caja" style="margin:8px 0">
@@ -867,14 +871,15 @@ function limpiarBusquedaGlobal(){
   if(box)box.innerHTML="";
 }
 
-function renderPendientesCurso(c){
-  const candidatos=(db.listaAlumnos||[]).filter(a=>a && a.curso===c && a.activo!==false).map(a=>{
+function renderPendientesCurso(c,modo="todos"){
+  const candidatos=(db.listaAlumnos||[]).filter(a=>a && a.curso===c && a.activo!==false &&
+    (modo==="seguimiento"?(esNivelSinFortalecimiento()||a.tipoSeguimiento==="otro"):modo==="fortalecimiento"?a.tipoSeguimiento!=="otro":true)).map(a=>{
     const hist=obtenerHistorial(a.id);
     const ultimo=hist.length?hist[hist.length-1]:null;
     const objetivo=String(a.proximoObjetivo || (ultimo?.proximo||"")).trim();
     if(!ultimo && !objetivo)return null;
     const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"";
-    const tipoOtro=a.tipoSeguimiento==="otro";
+    const tipoOtro=a.tipoSeguimiento==="otro"||esNivelSinFortalecimiento();
     const prioridad=ultimo?generarSugerencia(ultimo):"Definir el objetivo inicial del seguimiento.";
     return {a,ultimo,objetivo,turno,tipoOtro,prioridad};
   }).filter(Boolean).sort((x,y)=>(y.ultimo?.f||"").localeCompare(x.ultimo?.f||""));
@@ -887,7 +892,7 @@ function renderPendientesCurso(c){
       ${objetivo&&ultimo?`<p class="small">Orientación del último registro: ${esc(prioridad)}</p>`:""}
       <button class="move-btn" onclick="${accion}">📂 Abrir seguimiento y preparar encuentro</button>
     </div>`;
-  }).join(""):`<p>No hay objetivos pendientes ni registros previos para mostrar en este curso. Los alumnos del curso siguen disponibles en el apartado de seguimiento.</p>`;
+  }).join(""):`<p>No hay objetivos pendientes ni registros previos en este espacio.</p>`;
   return `<div class="inicio-area" style="border-left:5px solid #f1c40f;background:#fffdf4;margin:12px 0"><h3>🎯 Pendientes para el próximo encuentro · ${esc(c)}</h3><p>Se muestran únicamente alumnos de este curso que tienen un registro previo u objetivo guardado. Las sugerencias son editables y no reemplazan el criterio profesional.</p>${tarjetas}</div>`;
 }
 
@@ -1454,21 +1459,24 @@ function verDetalle(c,t){
   if(!db.datosCurso || typeof db.datosCurso!=="object") db.datosCurso={};
   if(!db.datosCurso[c])db.datosCurso[c]={total:0,fort:0};
   const alumnos=db.listaAlumnos.filter(a=>a.curso===c);
-  const activos=alumnos.filter(a=>a.activo!==false).length;
+  const activos=alumnos.filter(a=>a.activo!==false);
+  const esPrimario=db.nivelInstitucion==="Primario";
+  const alumnosFort=esPrimario?activos.filter(a=>a.tipoSeguimiento!=="otro").length:0;
+  const alumnosSeguimiento=esPrimario?activos.filter(a=>a.tipoSeguimiento==="otro").length:activos.length;
   document.getElementById("app").innerHTML=`
     <h2>Curso: ${esc(c)}</h2>
-    <div class="resumen-caja"><b>Modalidad:</b> ${esCursoFlexible(c)?"🟡 Seguimiento flexible":"🟢 Fortalecimiento estructurado"}</div>
     <div class="stats-box">
-      Total alumnos: ${esc(db.datosCurso[c].total)}
-      <button class="edit-btn" onclick="editarDatoCurso(${jsArg(c)},'total',${jsArg(t)})">Edit</button><br><br>
-      En Fortalecimiento: ${esc(db.datosCurso[c].fort)}
-      <button class="edit-btn" onclick="editarDatoCurso(${jsArg(c)},'fort',${jsArg(t)})">Edit</button>
+      <b>Resumen del curso</b><br>
+      Matrícula total: ${esc(db.datosCurso[c].total)}
+      <button class="edit-btn" onclick="editarDatoCurso(${jsArg(c)},'total',${jsArg(t)})">Editar</button>
+      ${esPrimario?`<br><br>Cupo de Fortalecimiento: ${esc(db.datosCurso[c].fort)}
+      <button class="edit-btn" onclick="editarDatoCurso(${jsArg(c)},'fort',${jsArg(t)})">Editar</button>`:""}
       <hr>
-      Registrados en la app: ${alumnos.length} · Activos: ${activos}
+      ${esPrimario?`Alumnos activos en Fortalecimiento: ${alumnosFort} · En Seguimiento de trayectorias: ${alumnosSeguimiento}`:`Alumnos activos en Seguimiento de trayectorias: ${alumnosSeguimiento}`}
     </div>
-    ${renderPendientesCurso(c)}
     <button class="volver" onclick="cargarCursos(${jsArg(t)})">← Volver</button>
-    <button class="cat-btn" onclick="verCats(${jsArg(c)},${jsArg(t)})">🟢 ${db.nivelInstitucion==="Primario"?"Categorías de Escritura":"Seguimiento de alumnos"}</button>`;
+    ${esPrimario?`<section class="inicio-area"><h3>🟢 Fortalecimiento</h3><p>Categorías de lectura y escritura para el trabajo de los OA.</p><button class="cat-btn" onclick="verCats(${jsArg(c)},${jsArg(t)})">Abrir Fortalecimiento</button></section>`:""}
+    <section class="inicio-area"><h3>🟡 Seguimiento de trayectorias</h3><p>Intervenciones por motivos diversos, acuerdos, observaciones e informes.</p><button class="cat-btn" style="background:#c47b22" onclick="verSeguimientosCurso(${jsArg(c)},${jsArg(t)})">Abrir Seguimiento</button></section>`;
   }catch(err){
     console.error("Error al abrir detalle del curso:",err);
     document.getElementById("app").innerHTML=`<div class="alerta"><b>No se pudo abrir este curso.</b><br>${esc(err.message)}</div><button class="volver" onclick="cargarCursos(${jsArg(t)})">← Volver a cursos</button>`;
@@ -1486,40 +1494,26 @@ function editarDatoCurso(c,campo,t){
 /* ========================= CATEGORÍAS ========================= */
 
 function verSeguimientoAbierto(c,t){
-  const alumnos=db.listaAlumnos.filter(a=>a.curso===c);
-  let html=`<h2>${esc(c)}</h2>
-    <div class="resumen-caja"><b>${nivelIcono(db.nivelInstitucion)} Seguimiento abierto — ${esc(db.nivelInstitucion)}</b><br>
-    <small>En este nivel no se utilizan categorías de Fortalecimiento. Los alumnos se registran mediante seguimiento individual y abierto.</small></div>
-    <button class="volver" onclick="verDetalle(${jsArg(c)},${jsArg(t)})">← Volver</button>
-    <div class="desc-box" style="border-left:5px solid #f39c12">
-      <b>👥 ALUMNOS EN SEGUIMIENTO</b><br>
-      <label>Nombre del alumno</label><input type="text" id="in-seguimiento-abierto" placeholder="Nombre y apellido">
-      <label>Motivo principal</label>
-      <select id="motivo-seguimiento-abierto"><option>Conductual</option><option>Trayectoria escolar</option><option>Aprendizaje</option><option>Asistencia</option><option>Convivencia</option><option>Otro</option></select>
-      <button class="add-btn" onclick="agregarAlumnoAbierto(${jsArg(c)},${jsArg(t)})">+ Agregar alumno</button>
-    </div>`;
-  alumnos.forEach(a=>{
-    html+=`<div class="ficha-box" style="margin:10px 0"><button class="${a.activo===false?"inactivo":"alumno-btn"}" onclick="abrirFichaOtro(${jsArg(a.id)},${jsArg(c)},${jsArg(t)})">👤 ${esc(a.nombre)} ${a.motivo?"· "+esc(a.motivo):""}</button></div>`;
-  });
-  document.getElementById("app").innerHTML=html;
+  return verSeguimientosCurso(c,t);
 }
 
 function agregarAlumnoAbierto(c,t){
-  const n=document.getElementById("in-seguimiento-abierto")?.value.trim();
-  const motivo=document.getElementById("motivo-seguimiento-abierto")?.value||"Otro";
+  const n=document.getElementById("in-otros")?.value.trim();
+  const motivo=document.getElementById("motivo-otros")?.value||"Otro";
   if(!n)return alert("Ingresá el nombre del alumno.");
-  const alumno={id:crearId(),nombre:n,curso:c,cat:"otros",tipoSeguimiento:"otro",motivo,activo:true,proximoObjetivo:""};
+  const alumno={id:crearId(),nombre:n,curso:c,cat:"otros",tipoSeguimiento:"otro",motivo,activo:true,proximoObjetivo:"",historialCursos:[{curso:c,desde:new Date().toISOString().slice(0,10),hasta:null,motivo:"Alta"}]};
   db.listaAlumnos.push(alumno); db.registrosAlumnos[alumno.id]=[];
-  if(guardar())verSeguimientoAbierto(c,t);
+  if(guardar())verSeguimientosCurso(c,t);
 }
 
 function verCats(c,t){
-  if(esNivelSinFortalecimiento()) return verSeguimientoAbierto(c,t);
-  let html=`<h2>${esc(c)}</h2>
-  <div class="resumen-caja"><b>${esCursoFlexible(c)?"🟡 Seguimiento flexible":"🟢 Seguimiento de Fortalecimiento"}</b><br><small>${esCursoFlexible(c)?"Las categorías se conservan, pero cada registro permite observaciones abiertas.":"Se utilizan los campos estructurados de seguimiento."}</small></div>
-  <button class="volver" onclick="verDetalle(${jsArg(c)},${jsArg(t)})">← Volver</button>`;
+  if(esNivelSinFortalecimiento())return verSeguimientosCurso(c,t);
+  let html=`<h2>Fortalecimiento · ${esc(c)}</h2>
+    <div class="resumen-caja"><b>🟢 Categorías de lectura y escritura</b><br><small>Espacio de trabajo de los OA. Los alumnos agregados aquí se contabilizan en las estadísticas de Fortalecimiento.</small></div>
+    <button class="volver" onclick="verDetalle(${jsArg(c)},${jsArg(t)})">← Volver al curso</button>
+    ${renderPendientesCurso(c,"fortalecimiento")}`;
   catOrder.forEach(id=>{
-    const alumnos=db.listaAlumnos.filter(a=>a.curso===c&&a.cat===id);
+    const alumnos=db.listaAlumnos.filter(a=>a.curso===c&&a.cat===id&&a.tipoSeguimiento!=="otro");
     html+=`
     <div class="desc-box">
       <b>${esc(catInfo[id][0])}</b><br>
@@ -1528,35 +1522,40 @@ function verCats(c,t){
       <button class="add-btn" onclick="agregarAlumno(${jsArg(c)},${jsArg(t)},${jsArg(id)})">+ Agregar alumno</button>
       <div id="list-${id}">`;
     alumnos.forEach(a=>{
-      html+=`<button class="${a.activo===false?"inactivo":"alumno-btn"}" onclick="abrirFicha(${jsArg(a.id)},${jsArg(c)},${jsArg(t)})">
-        👤 ${esc(a.nombre)} ${a.activo===false?"(INACTIVO)":""}
-      </button>`;
+      html+=`<button class="${a.activo===false?"inactivo":"alumno-btn"}" onclick="abrirFicha(${jsArg(a.id)},${jsArg(c)},${jsArg(t)})">👤 ${esc(a.nombre)} ${a.activo===false?"(INACTIVO)":""}</button>`;
     });
     html+=`</div></div>`;
   });
+  document.getElementById("app").innerHTML=html;
+}
 
-  // Seguimiento de alumnos que no pertenecen a Fortalecimiento
-  const otros=db.listaAlumnos.filter(a=>a.curso===c&&a.tipoSeguimiento==="otro");
-  html+=`<div class="desc-box" style="border-left:5px solid #f39c12">
-    <b>📌 OTROS ALUMNOS EN SEGUIMIENTO</b><br>
-    <small>Alumnos con los que intervenís por cuestiones conductuales, de trayectoria, aprendizaje, asistencia, convivencia u otras situaciones, sin incorporarlos a Fortalecimiento.</small>
-    <input type="text" id="in-otros" placeholder="Nombre del alumno">
-    <select id="motivo-otros">
-      <option value="Conductual">Conductual</option>
-      <option value="Trayectoria escolar">Trayectoria escolar</option>
-      <option value="Aprendizaje">Aprendizaje</option>
-      <option value="Asistencia">Asistencia</option>
-      <option value="Convivencia">Convivencia</option>
-      <option value="Otro">Otro</option>
-    </select>
-    <button class="add-btn" onclick="agregarAlumnoOtro(${jsArg(c)},${jsArg(t)})">+ Agregar a seguimiento</button>
-    <div id="list-otros">`;
-  otros.forEach(a=>{
-    html+=`<button class="${a.activo===false?"inactivo":"alumno-btn"}" onclick="abrirFichaOtro(${jsArg(a.id)},${jsArg(c)},${jsArg(t)})">
-      👤 ${esc(a.nombre)} ${a.motivo?"· "+esc(a.motivo):""} ${a.activo===false?"(INACTIVO)":""}
-    </button>`;
+function verSeguimientosCurso(c,t){
+  const alumnos=db.listaAlumnos.filter(a=>a.curso===c&&(esNivelSinFortalecimiento()||a.tipoSeguimiento==="otro"));
+  let html=`<h2>Seguimiento de trayectorias · ${esc(c)}</h2>
+    <div class="resumen-caja" style="border-left:5px solid #c47b22"><b>🟡 Seguimiento de trayectorias</b><br>
+    <small>Para registrar intervenciones por distintos motivos, observaciones, acuerdos y próximos pasos. Los alumnos de este espacio quedan fuera de las estadísticas de Fortalecimiento.</small></div>
+    <button class="volver" onclick="verDetalle(${jsArg(c)},${jsArg(t)})">← Volver al curso</button>
+    ${renderPendientesCurso(c,"seguimiento")}
+    <div class="desc-box" style="border-left:5px solid #f39c12">
+      <b>👥 Agregar alumno al seguimiento</b><br>
+      <label>Nombre y apellido</label><input type="text" id="in-otros" placeholder="Nombre del alumno">
+      <label>Motivo principal de intervención</label>
+      <select id="motivo-otros">
+        <option value="Conductual">Conductual</option>
+        <option value="Trayectoria escolar">Trayectoria escolar</option>
+        <option value="Aprendizaje">Aprendizaje</option>
+        <option value="Asistencia">Asistencia</option>
+        <option value="Convivencia">Convivencia</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <button class="add-btn" onclick="agregarAlumnoOtro(${jsArg(c)},${jsArg(t)})">+ Agregar a seguimiento</button>
+    </div>
+    <div class="desc-box"><b>Alumnos en seguimiento (${alumnos.length})</b>`;
+  alumnos.forEach(a=>{
+    html+=`<button class="${a.activo===false?"inactivo":"alumno-btn"}" onclick="abrirFichaOtro(${jsArg(a.id)},${jsArg(c)},${jsArg(t)})">👤 ${esc(a.nombre)} ${a.motivo?"· "+esc(a.motivo):""} ${a.activo===false?"(INACTIVO)":""}</button>`;
   });
-  html+=`</div></div>`;
+  if(!alumnos.length)html+='<p class="small">Todavía no hay alumnos cargados en este espacio.</p>';
+  html+='</div>';
   document.getElementById("app").innerHTML=html;
 }
 
@@ -1580,7 +1579,7 @@ function agregarAlumnoOtro(c,t){
   const alumno={id:crearId(),nombre:n,curso:c,cat:"otros",tipoSeguimiento:"otro",motivo,activo:true,proximoObjetivo:"",historialCursos:[{curso:c,desde:new Date().toISOString().slice(0,10),hasta:null,motivo:"Alta"}]};
   db.listaAlumnos.push(alumno);
   db.registrosAlumnos[alumno.id]=[];
-  if(guardar()) verCats(c,t);
+  if(guardar()) verSeguimientosCurso(c,t);
 }
 
 function documentosAlumnoHTML(alumno,id,curso,turno,modo){
@@ -1635,9 +1634,15 @@ function quitarDocumentoAlumno(id,documentoId,curso,turno,modo){
  refrescarFichaDocumentos(id,curso,turno,modo);
 }
 
+function volverAListaAlumnoEOE(id,c,t,seguimiento=false){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(seguimiento||alumno?.tipoSeguimiento==="otro"||esNivelSinFortalecimiento())return verSeguimientosCurso(c,t);
+  return verCats(c,t);
+}
+
 function abrirFichaOtro(id,c,t){
   const a=db.listaAlumnos.find(x=>x.id===id);
-  if(!a){alert("No se encontró al alumno.");verCats(c,t);return;}
+  if(!a){alert("No se encontró al alumno.");verSeguimientosCurso(c,t);return;}
   const hist=obtenerHistorial(id);
   const histHtml=hist.slice().reverse().map(r=>`<div class="historial-tarjeta">
     <b>📅 Fecha:</b> ${esc(r.f||"Sin fecha")}<br>
@@ -1689,7 +1694,7 @@ function abrirFichaOtro(id,c,t){
       <select id="otro-evolucion"><option>Se mantiene</option><option>Avanza</option><option>Presenta retroceso</option></select>
       <button style="background:#27ae60" onclick="guardarRegistroOtro(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar intervención</button></details>
       <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar seguimiento</button>
-      <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
+      <button class="volver" onclick="verSeguimientosCurso(${jsArg(c)},${jsArg(t)})">← Volver</button>
     </div>
     <details class="compact-details historial-panel"><summary>📜 Historial anterior — ${hist.length} registros</summary>
     ${histHtml||'<p class="small">No hay intervenciones registradas todavía.</p>'}</details>`;
@@ -2096,7 +2101,7 @@ function moverAlumnoCurso(id){
   db=nuevoEstado;
   const turnoDestino=obtenerTurnoDeCurso(destino);
   alert("✅ Alumno movido correctamente.\n\n"+a.nombre+" ahora pertenece a "+destino+".\nSu historial y su mismo ID fueron conservados.");
-  if(turnoDestino) verCats(destino,turnoDestino);
+  if(turnoDestino) volverAListaAlumnoEOE(id,destino,turnoDestino,a.tipoSeguimiento==="otro");
 }
 
 function moverAlumno(id,c,t){
@@ -2130,9 +2135,10 @@ function eliminarAlumno(id,c,t){
   const a=db.listaAlumnos.find(x=>x.id===id);
   if(!a)return;
   if(!confirm("¿Eliminar definitivamente a "+a.nombre+" y todo su historial? Esta acción requiere un backup previo si querés conservarlo."))return;
+  const esSeguimiento=a.tipoSeguimiento==="otro"||esNivelSinFortalecimiento();
   db.listaAlumnos=db.listaAlumnos.filter(x=>x.id!==id);
   delete db.registrosAlumnos[id];
-  if(guardar())verCats(c,t);
+  if(guardar())volverAListaAlumnoEOE(id,c,t,esSeguimiento);
 }
 
 /* ========================= FORMULARIO ========================= */
