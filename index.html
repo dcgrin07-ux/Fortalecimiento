@@ -118,6 +118,13 @@ button,input,textarea,select{font-family:inherit}button{transition:transform .18
 @media(max-width:640px){.portal-grid-main{grid-template-columns:1fr}.portal-grid-main .portal-card{min-height:0}}
 </style>
 <style>
+.eoe-informe-overlay{position:fixed;inset:0;z-index:12000;display:none;align-items:center;justify-content:center;padding:18px;background:#14243bb8}
+.eoe-informe-dialog{width:min(820px,100%);max-height:min(90vh,900px);display:flex;flex-direction:column;background:#fff;border:1px solid #dce5ef;border-radius:18px;box-shadow:0 22px 70px #0f213c55;overflow:hidden}
+.eoe-informe-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #e1e8f2}
+.eoe-informe-dialog header h2{margin:0;font-size:1.1rem;color:#203853}
+.eoe-informe-dialog header button{width:auto;margin:0;padding:8px 12px;background:#f3f6fa;color:#304762;box-shadow:none}
+.eoe-informe-preview-text{margin:0;padding:24px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:15px/1.75 Georgia,"Times New Roman",serif;color:#26384c}
+@media(max-width:600px){.eoe-informe-overlay{padding:8px}.eoe-informe-dialog{max-height:94vh}.eoe-informe-preview-text{padding:17px;font-size:14px}}
 .informe-guardado{margin:8px 0;padding:10px 12px;border:1px solid #dfe7f0;border-radius:10px;background:#fbfcfe}
 .informe-guardado>summary{cursor:pointer;color:#345f8c;font-weight:700}
 .informes-guardados{margin-top:14px;padding:12px 14px;border:1px solid #dfe7f0;border-radius:12px;background:#f8fafc}
@@ -146,6 +153,7 @@ const STORAGE_KEY = "datos_sistema_v8";
 
 const DEFAULT_DB = {
   datosCurso:{},
+  listadosCurso:{},
   tiposCurso:{},
   nombreEscuela:"Mi Escuela",
   nivelInstitucion:"Primario",
@@ -241,7 +249,7 @@ function deepClone(o){return JSON.parse(JSON.stringify(o));}
 function crearInstitucionDesdeDatos(data,nombre,nivel){
   const base={
     id:crearId(), nombreEscuela:nombre||"Mi Escuela", nivelInstitucion:nivel||"Primario",
-    datosCurso:deepClone(data.datosCurso||{}), tiposCurso:deepClone(data.tiposCurso||{}),
+    datosCurso:deepClone(data.datosCurso||{}), listadosCurso:deepClone(data.listadosCurso||{}), tiposCurso:deepClone(data.tiposCurso||{}),
     cursosNombres:deepClone(data.cursosNombres||DEFAULT_DB.cursosNombres),
     listaAlumnos:deepClone(data.listaAlumnos||[]), registrosAlumnos:deepClone(data.registrosAlumnos||{})
   };
@@ -254,6 +262,7 @@ function prepararInstitucion(inst){
   if(!inst.nivelInstitucion)inst.nivelInstitucion="Primario";
   if(!inst.cursosNombres||typeof inst.cursosNombres!=="object")inst.cursosNombres=deepClone(DEFAULT_DB.cursosNombres);
   if(!inst.datosCurso||typeof inst.datosCurso!=="object")inst.datosCurso={};
+  if(!inst.listadosCurso||typeof inst.listadosCurso!=="object")inst.listadosCurso={};
   if(!inst.tiposCurso||typeof inst.tiposCurso!=="object")inst.tiposCurso={};
   if(!Array.isArray(inst.listaAlumnos))inst.listaAlumnos=[];
   if(!inst.registrosAlumnos||typeof inst.registrosAlumnos!=="object")inst.registrosAlumnos={};
@@ -286,7 +295,7 @@ function fusionarConDefault(data){
     const legacy={
       nombreEscuela:typeof data.nombreEscuela==="string"?data.nombreEscuela:"Mi Escuela",
       nivelInstitucion:typeof data.nivelInstitucion==="string"?data.nivelInstitucion:"Primario",
-      datosCurso:data.datosCurso,tiposCurso:data.tiposCurso,cursosNombres:data.cursosNombres,
+      datosCurso:data.datosCurso,listadosCurso:data.listadosCurso,tiposCurso:data.tiposCurso,cursosNombres:data.cursosNombres,
       listaAlumnos:data.listaAlumnos,registrosAlumnos:data.registrosAlumnos
     };
     const inst=prepararInstitucion(crearInstitucionDesdeDatos(legacy,legacy.nombreEscuela,legacy.nivelInstitucion));
@@ -297,7 +306,7 @@ function fusionarConDefault(data){
   if(!activa)return out;
   out.institucionActivaId=activa.id;
   out.nombreEscuela=activa.nombreEscuela; out.nivelInstitucion=activa.nivelInstitucion;
-  out.datosCurso=activa.datosCurso; out.tiposCurso=activa.tiposCurso;
+  out.datosCurso=activa.datosCurso; out.listadosCurso=activa.listadosCurso; out.tiposCurso=activa.tiposCurso;
   out.cursosNombres=activa.cursosNombres; out.listaAlumnos=activa.listaAlumnos; out.registrosAlumnos=activa.registrosAlumnos;
   return out;
 }
@@ -306,7 +315,7 @@ function sincronizarInstitucionActiva(){
   const inst=(db.instituciones||[]).find(i=>i.id===db.institucionActivaId);
   if(!inst)return;
   inst.nombreEscuela=db.nombreEscuela; inst.nivelInstitucion=db.nivelInstitucion;
-  inst.datosCurso=db.datosCurso; inst.tiposCurso=db.tiposCurso; inst.cursosNombres=db.cursosNombres;
+  inst.datosCurso=db.datosCurso; inst.listadosCurso=db.listadosCurso; inst.tiposCurso=db.tiposCurso; inst.cursosNombres=db.cursosNombres;
   inst.listaAlumnos=db.listaAlumnos; inst.registrosAlumnos=db.registrosAlumnos;
 }
 
@@ -373,13 +382,13 @@ function cargarInstitucion(id){
   const actual=(db.instituciones||[]).find(i=>i.id===db.institucionActivaId);
   if(actual){
     actual.nombreEscuela=db.nombreEscuela; actual.nivelInstitucion=db.nivelInstitucion;
-    actual.datosCurso=db.datosCurso; actual.tiposCurso=db.tiposCurso; actual.cursosNombres=db.cursosNombres;
+    actual.datosCurso=db.datosCurso; actual.listadosCurso=db.listadosCurso; actual.tiposCurso=db.tiposCurso; actual.cursosNombres=db.cursosNombres;
     actual.listaAlumnos=db.listaAlumnos; actual.registrosAlumnos=db.registrosAlumnos;
   }
   const inst=(db.instituciones||[]).find(i=>i.id===id);
   if(!inst)return;
   db.institucionActivaId=inst.id; db.nombreEscuela=inst.nombreEscuela; db.nivelInstitucion=inst.nivelInstitucion;
-  db.datosCurso=deepClone(inst.datosCurso); db.tiposCurso=deepClone(inst.tiposCurso);
+  db.datosCurso=deepClone(inst.datosCurso); db.listadosCurso=deepClone(inst.listadosCurso||{}); db.tiposCurso=deepClone(inst.tiposCurso);
   db.cursosNombres=deepClone(inst.cursosNombres); db.listaAlumnos=deepClone(inst.listaAlumnos); db.registrosAlumnos=deepClone(inst.registrosAlumnos);
   guardar(); mostrarInicio();
 }
@@ -441,6 +450,12 @@ function fechaInformeEOE(valor){
   const fecha=new Date(String(valor).length===10?String(valor)+"T00:00:00":valor);
   return Number.isNaN(fecha.getTime())?String(valor):fecha.toLocaleDateString("es-AR",{day:"numeric",month:"long",year:"numeric"});
 }
+function etiquetaCursoInformeEOE(curso){
+  const meta=(db.datosCurso||{})[curso]||{};
+  const anio=Number(meta.anioEscolar),division=String(meta.division||"").trim();
+  if(anio||division)return [anio?anio+".º año":"",division?"División "+division:""].filter(Boolean).join(" · ");
+  return String(curso||"Sin especificar");
+}
 function construirInformeFormalEOE(id,curso,detalles,fechaEmision){
   const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
   if(!alumno)return "";
@@ -460,7 +475,7 @@ function construirInformeFormalEOE(id,curso,detalles,fechaEmision){
     "INFORME DE SEGUIMIENTO DE LA TRAYECTORIA EDUCATIVA",
     "",
     "Estudiante: "+(alumno.nombre||"Sin nombre"),
-    "Curso/espacio de seguimiento: "+(curso||"Sin especificar"),
+    "Curso/espacio de seguimiento: "+etiquetaCursoInformeEOE(curso),
     "Período de seguimiento: "+periodo,
     "",
     historial.length?"En el marco del seguimiento de la trayectoria educativa de "+(alumno.nombre||"el/la estudiante")+", se registra "+(historial.length===1?"una intervención pedagógica":historial.length+" intervenciones pedagógicas")+".":"Al momento de la elaboración de este informe, la ficha no cuenta con registros de seguimiento."
@@ -553,7 +568,7 @@ function descargarTextoInformeWordEOE(texto,nombreAlumno,fechaISO){
       const fechaDocumento=i===4;
       const seccion=/^\d+\.\s/.test(linea);
       const registro=/^Registro \d+/.test(linea);
-      const formato=membrete?"\\pard\\qc\\b\\fs18 ":fechaDocumento?"\\pard\\qr\\sa180\\fs22 ":titulo?"\\pard\\qc\\sb260\\sa260\\b\\fs30 ":seccion?"\\pard\\ql\\sb220\\sa100\\b\\fs24 ":registro?"\\pard\\ql\\sb160\\b\\fs22 ":"\\pard\\qj\\sa120\\fs22 ";
+      const formato=membrete?"\\pard\\ql\\b\\fs18 ":fechaDocumento?"\\pard\\qr\\sa180\\fs22 ":titulo?"\\pard\\qc\\sb260\\sa260\\b\\fs30 ":seccion?"\\pard\\ql\\sb220\\sa100\\b\\fs24 ":registro?"\\pard\\ql\\sb160\\b\\fs22 ":"\\pard\\qj\\sa120\\fs22 ";
       const cierre=membrete||fechaDocumento||titulo||seccion||registro?"\\b0":"";
       return formato+escaparTextoRTF(linea)+cierre+"\\par";
     }).join("\n")+"}";
@@ -602,6 +617,34 @@ function guardarYDescargarInformeAlumnoEOE(id,curso,turno,modo){
   refrescarFichaDocumentos(id,curso,turno,modo);
   alert("El informe se guardó en la ficha del alumno y se descargó como archivo editable en Word.");
 }
+function abrirVistaInformeEOE(titulo,texto){
+  let modal=document.getElementById("eoe-informe-preview");
+  if(!modal){
+    modal=document.createElement("div");
+    modal.id="eoe-informe-preview";modal.className="eoe-informe-overlay";modal.setAttribute("role","dialog");modal.setAttribute("aria-modal","true");modal.setAttribute("aria-labelledby","eoe-informe-preview-title");
+    modal.innerHTML='<section class="eoe-informe-dialog"><header><h2 id="eoe-informe-preview-title"></h2><button type="button" aria-label="Cerrar vista previa">Cerrar</button></header><pre class="eoe-informe-preview-text"></pre></section>';
+    modal.querySelector("header button").addEventListener("click",()=>{modal.style.display="none";});
+    modal.addEventListener("click",event=>{if(event.target===modal)modal.style.display="none";});
+    document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal.style.display==="flex")modal.style.display="none";});
+    document.body.appendChild(modal);
+  }
+  modal.querySelector("h2").textContent=titulo||"Vista previa del informe";
+  modal.querySelector("pre").textContent=String(texto||"").trim()||"El informe todavía no tiene contenido.";
+  modal.style.display="flex";
+}
+function verInformeAlumnoEOE(id,curso){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  if(!alumno)return alert("No se encontró al alumno.");
+  const detalles=document.getElementById("informe-aportes")?.value||"";
+  const texto=construirInformeFormalEOE(id,curso,detalles,new Date());
+  abrirVistaInformeEOE("Vista previa · "+(alumno.nombre||"Informe de seguimiento"),texto);
+}
+function verInformeGuardadoEOE(id,informeId){
+  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
+  const informe=(alumno?.informesGenerados||[]).find(x=>String(x.id)===String(informeId));
+  if(!informe)return alert("No se encontró el informe guardado.");
+  abrirVistaInformeEOE("Informe guardado · "+(informe.alumno||"Alumno")+" · "+(informe.fechaTexto||fechaInformeEOE(informe.fechaISO)),informe.texto||"");
+}
 function descargarInformeGuardadoEOE(id,informeId){
   const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
   const informe=(alumno?.informesGenerados||[]).find(x=>String(x.id)===String(informeId));
@@ -632,6 +675,7 @@ function accionesCompartirAlumnoHTML(id,curso,turno,modo){
     const cursoInforme=esc(informe.curso||"Curso sin especificar");
     const escuelaInforme=esc(informe.institucion||"Institución sin especificar");
     return '<details class="informe-guardado"><summary>'+fecha+' · '+escuelaInforme+' · '+cursoInforme+'</summary><div class="share-actions">'+
+      '<button type="button" onclick="verInformeGuardadoEOE('+jsArg(id)+','+jsArg(informe.id)+')">👁 Ver informe</button>'+
       '<button type="button" onclick="descargarInformeGuardadoEOE('+jsArg(id)+','+jsArg(informe.id)+')">⬇ Descargar editable (.rtf)</button>'+
       '<button type="button" onclick="compartirInformeGuardadoEOE(\'copiar\','+jsArg(id)+','+jsArg(informe.id)+')">Copiar</button>'+
       '<button type="button" onclick="compartirInformeGuardadoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(informe.id)+')">WhatsApp</button>'+
@@ -644,6 +688,7 @@ function accionesCompartirAlumnoHTML(id,curso,turno,modo){
     '<label for="informe-aportes">Aportes del equipo para integrar en el informe (opcional)</label>'+
     '<textarea id="informe-aportes" rows="4" placeholder="Escribí en tono narrativo la información que querés incorporar; por ejemplo, aspectos observados, acuerdos o líneas de trabajo..."></textarea>'+
     '<div class="share-actions">'+
+      '<button type="button" onclick="verInformeAlumnoEOE('+jsArg(id)+','+jsArg(curso)+')">👁 Ver informe</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar texto</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button>'+
@@ -1196,9 +1241,9 @@ function crearNuevaInstitucion(){
   if((db.instituciones||[]).some(i=>i.nombreEscuela.toLowerCase()===nombre.toLowerCase()))return alert("Ya existe una institución con ese nombre.");
   sincronizarInstitucionActiva();
   const cursos=nivel==="Primario"?deepClone(DEFAULT_DB.cursosNombres):{"Mañana":[],"Tarde":[]};
-  const inst=prepararInstitucion({id:crearId(),nombreEscuela:nombre,nivelInstitucion:nivel,datosCurso:{},tiposCurso:{},cursosNombres:cursos,listaAlumnos:[],registrosAlumnos:{}});
+  const inst=prepararInstitucion({id:crearId(),nombreEscuela:nombre,nivelInstitucion:nivel,datosCurso:{},listadosCurso:{},tiposCurso:{},cursosNombres:cursos,listaAlumnos:[],registrosAlumnos:{}});
   db.instituciones.push(inst); db.institucionActivaId=inst.id;
-  db.nombreEscuela=inst.nombreEscuela; db.nivelInstitucion=inst.nivelInstitucion; db.datosCurso={}; db.tiposCurso={}; db.cursosNombres=cursos; db.listaAlumnos=[]; db.registrosAlumnos={};
+  db.nombreEscuela=inst.nombreEscuela; db.nivelInstitucion=inst.nivelInstitucion; db.datosCurso={}; db.listadosCurso={}; db.tiposCurso={}; db.cursosNombres=cursos; db.listaAlumnos=[]; db.registrosAlumnos={};
   if(guardar())mostrarInicio();
 }
 
@@ -1455,6 +1500,50 @@ function agregarCurso(t){
   if(guardar())cargarCursos(t);
 }
 
+function obtenerContactosCursoEOE(curso){
+ if(!db.listadosCurso||typeof db.listadosCurso!=="object")db.listadosCurso={};
+ if(!Array.isArray(db.listadosCurso[curso]))db.listadosCurso[curso]=[];
+ return db.listadosCurso[curso];
+}
+function mostrarListadoAlumnosCursoEOE(curso,turno){
+ const contactos=obtenerContactosCursoEOE(curso),cursos=obtenerTodosLosCursos().filter(x=>x!==curso);
+ const opciones=cursos.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+ const filas=contactos.map(x=>{
+  const tel=String(x.telefono||"").replace(/[^0-9+() -]/g,"").trim();
+  return '<article class="historial-tarjeta" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>👤 '+esc(x.nombre||"Sin nombre")+'</b><br>'+
+   (tel?'<a href="tel:'+encodeURIComponent(tel)+'">📞 '+esc(x.telefono)+'</a>':'<span class="small">Sin teléfono</span>')+'</div>'+
+   '<div class="share-actions"><button type="button" onclick="editarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Editar</button><button type="button" onclick="eliminarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Quitar</button></div></article>';
+ }).join("");
+ document.getElementById("app").innerHTML='<h2>📱 Listado de alumnos · '+esc(curso)+'</h2><p class="small">Agenda de consulta del curso. Independiente de las trayectorias y sus estadísticas.</p>'+
+  '<button class="volver" onclick="verDetalle('+jsArg(curso)+','+jsArg(turno)+')">← Volver al curso</button>'+
+  '<section class="desc-box"><label for="contacto-curso-nombre">Nombre y apellido</label><input id="contacto-curso-nombre" autocomplete="off" placeholder="Nombre del alumno"><label for="contacto-curso-telefono">Teléfono</label><input id="contacto-curso-telefono" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 2342 123456"><button class="add-btn" type="button" onclick="agregarContactoListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">➕ Agregar al listado</button></section>'+
+  '<section class="ficha-box"><h3>Alumnos y teléfonos ('+contactos.length+')</h3>'+(contactos.length?filas:'<p class="small">Todavía no hay nombres en el listado.</p>')+'</section>'+
+  (contactos.length&&cursos.length?'<section class="desc-box"><h3>🔁 Preparar el próximo ciclo lectivo</h3><p class="small">Traslada todos estos nombres y teléfonos al curso elegido y deja vacío el listado actual. Las fichas e historiales no se modifican.</p><label for="curso-destino-listado">Curso de destino</label><select id="curso-destino-listado"><option value="">Elegí un curso</option>'+opciones+'</select><button class="primary-action" type="button" onclick="trasladarListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">Trasladar listado completo</button></section>':'');
+}
+function agregarContactoListadoCursoEOE(curso,turno){
+ const nombre=document.getElementById("contacto-curso-nombre")?.value.trim()||"",telefono=(document.getElementById("contacto-curso-telefono")?.value||"").trim();
+ if(!nombre)return alert("Ingresá el nombre y apellido.");
+ obtenerContactosCursoEOE(curso).push({id:crearId(),nombre,telefono});if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+}
+function editarContactoListadoEOE(curso,turno,id){
+ const x=obtenerContactosCursoEOE(curso).find(a=>String(a.id)===String(id));if(!x)return;
+ const nombre=prompt("Nombre y apellido:",x.nombre||"");if(nombre===null)return;if(!nombre.trim())return alert("El nombre no puede quedar vacío.");
+ const telefono=prompt("Teléfono:",x.telefono||"");if(telefono===null)return;
+ x.nombre=nombre.trim();x.telefono=telefono.trim();if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+}
+function eliminarContactoListadoEOE(curso,turno,id){
+ const lista=obtenerContactosCursoEOE(curso),i=lista.findIndex(x=>String(x.id)===String(id));if(i<0||!confirm("¿Quitar este nombre y teléfono del listado?"))return;
+ const [quitado]=lista.splice(i,1);if(!guardar()){lista.splice(i,0,quitado);return;}mostrarListadoAlumnosCursoEOE(curso,turno);
+}
+function trasladarListadoCursoEOE(origenCurso,turno){
+ const destino=document.getElementById("curso-destino-listado")?.value||"";if(!destino)return alert("Elegí el curso de destino.");if(destino===origenCurso)return alert("Elegí un curso distinto.");
+ const origen=obtenerContactosCursoEOE(origenCurso);if(!origen.length)return alert("El listado actual está vacío.");
+ if(!confirm("Se trasladarán "+origen.length+" nombres y teléfonos a "+destino+". El listado de "+origenCurso+" quedará vacío. Las trayectorias no se modificarán. ¿Continuar?"))return;
+ const anteriorDestino=obtenerContactosCursoEOE(destino).slice(),anteriorOrigen=origen.slice(),ids=new Set(anteriorDestino.map(x=>String(x.id)));
+ db.listadosCurso[destino]=anteriorDestino.concat(anteriorOrigen.filter(x=>!ids.has(String(x.id))));db.listadosCurso[origenCurso]=[];
+ if(!guardar()){db.listadosCurso[destino]=anteriorDestino;db.listadosCurso[origenCurso]=anteriorOrigen;return;}
+ alert("Listado trasladado a "+destino+".");mostrarListadoAlumnosCursoEOE(destino,obtenerTurnoDeCurso(destino)||turno);
+}
 function verDetalle(c,t){
   try{
   if(!db.datosCurso || typeof db.datosCurso!=="object") db.datosCurso={};
@@ -1476,6 +1565,7 @@ function verDetalle(c,t){
       ${esPrimario?`Alumnos activos en Fortalecimiento: ${alumnosFort} · En Seguimiento de trayectorias: ${alumnosSeguimiento}`:`Alumnos activos en Seguimiento de trayectorias: ${alumnosSeguimiento}`}
     </div>
     <button class="volver" onclick="cargarCursos(${jsArg(t)})">← Volver</button>
+     <section class="inicio-area"><h3>📱 Listado de alumnos y teléfonos</h3><p>Agenda rápida del curso, separada de los registros de seguimiento.</p><button class="cat-btn" onclick="mostrarListadoAlumnosCursoEOE(${jsArg(c)},${jsArg(t)})">Abrir listado</button></section>
     ${esPrimario?`<section class="inicio-area"><h3>🟢 Fortalecimiento</h3><p>Categorías de lectura y escritura para el trabajo de los OA.</p><button class="cat-btn" onclick="verCats(${jsArg(c)},${jsArg(t)})">Abrir Fortalecimiento</button></section>`:""}
     <section class="inicio-area"><h3>🟡 Seguimiento de trayectorias</h3><p>Intervenciones por motivos diversos, acuerdos, observaciones e informes.</p><button class="cat-btn" style="background:#c47b22" onclick="verSeguimientosCurso(${jsArg(c)},${jsArg(t)})">Abrir Seguimiento</button></section>`;
   }catch(err){
