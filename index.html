@@ -1886,7 +1886,7 @@ function abrirFicha(id,c,t){
     ).join("\n"):"Sin registros previos guardados.";
 
 
-    const informePrompt=    const informePrompt=`Redacta un informe profesional sobre el seguimiento educativo del alumno ${a.nombre}, curso ${c}, categoría inicial ${descCatActual}. No inventes información. Historial:\\n${historialTexto}`;
+    const informePrompt=`Redacta un informe profesional sobre el seguimiento educativo del alumno ${a.nombre}, curso ${c}, categoría inicial ${descCatActual}. No inventes información. Historial:\\n${historialTexto}`;
 
     const opcionesCats=catOrder.map(x=>`<option value="${esc(x)}" ${x===a.cat?"selected":""}>${esc(catInfo[x][0])}</option>`).join("");
 
