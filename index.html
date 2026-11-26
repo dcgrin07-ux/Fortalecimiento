@@ -1890,16 +1890,6 @@ function abrirFicha(id,c,t){
 
     const opcionesCats=catOrder.map(x=>`<option value="${esc(x)}" ${x===a.cat?"selected":""}>${esc(catInfo[x][0])}</option>`).join("");
 
-    let resumenHtml=hist.length?`
-      <div class="resumen-caja">
-        <h4 style="margin-top:0;color:#2980b9">📈 EVOLUCIÓN DE LA TRAYECTORIA</h4>
-        <p><b>Escritura:</b><br>${hist.map(r=>esc(r.escritura||"No registrado")).join(" → ")}</p>
-        <p><b>Lectura:</b><br>${hist.map(r=>esc(r.lectura||"No registrado")).join(" → ")}</p>
-        <p><b>Comprensión:</b><br>${hist.map(r=>esc(r.comprension||"No registrado")).join(" → ")}</p>
-        <p><b>Apoyo:</b><br>${hist.map(r=>esc(r.apoyo||"No registrado")).join(" → ")}</p>
-      </div>`:
-      `<div class="resumen-caja"><p style="margin:0;color:#7f8c8d">Aún no hay registros estructurados para este alumno.</p></div>`;
-
     let histHtml=hist.slice().reverse().map((r,idx)=>{
       const areasStr=Array.isArray(r.areas)?r.areas.join(", "):(r.areas||"No especificado");
       const cont=Array.isArray(r.continuar)?r.continuar.join(", "):"";
@@ -1949,8 +1939,6 @@ function abrirFicha(id,c,t){
         </a>
 
         </details>
-        <h3>📊 Resumen</h3>
-        ${resumenHtml}
 
         <hr>
         <details class="compact-details registro-panel"><summary>＋ Registrar seguimiento</summary>
