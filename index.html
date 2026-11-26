@@ -1835,6 +1835,7 @@ function guardarRegistroOtro(id,c,t){
     throw new Error('La verificación del guardado falló.');
   }
   db=nuevoEstado;
+  guardar();
   alert('✅ Intervención guardada. Historial anterior conservado.');
   abrirFichaOtro(id,c,t);
 }
@@ -2112,6 +2113,7 @@ function moverAlumnoCurso(id){
     throw new Error("La verificación detectó una inconsistencia de identidad del alumno.");
   }
   db=nuevoEstado;
+  guardar();
   const turnoDestino=obtenerTurnoDeCurso(destino);
   alert("✅ Alumno movido correctamente.\n\n"+a.nombre+" ahora pertenece a "+destino+".\nSu historial y su mismo ID fueron conservados.");
   if(turnoDestino) volverAListaAlumnoEOE(id,destino,turnoDestino,a.tipoSeguimiento==="otro");
@@ -2300,6 +2302,7 @@ function guardarRegistroFlexible(id,c,t,volverAlCurso=false){
     }
 
     db=nuevoEstado;
+    guardar();
     alert("✅ Registro guardado definitivamente. Historial anterior conservado.");
     if(volverAlCurso)volverAListaAlumnoEOE(id,c,t,alumno.tipoSeguimiento==="otro");else abrirFicha(id,c,t);
   }catch(e){
@@ -2386,6 +2389,7 @@ function guardarRegistroEstructurado(id,c,t,volverAlCurso=false){
     /* Solo después de confirmar que localStorage aceptó el dato,
        reemplazamos el estado en memoria. */
     db=estadoNuevo;
+    guardar();
 
     /* Verificación inmediata: leemos nuevamente lo guardado */
     const verificacion=JSON.parse(localStorage.getItem(STORAGE_KEY));
