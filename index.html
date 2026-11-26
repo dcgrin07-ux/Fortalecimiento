@@ -81,6 +81,8 @@ button,input,textarea,select{font-family:inherit}button{transition:transform .18
 .active-institution-label{font-size:10px;font-weight:900;letter-spacing:1.3px;color:#1b927c}.active-institution-banner strong{font-size:clamp(21px,4vw,28px);color:#203853}.active-institution-banner>span:last-child{font-size:12px;color:#668778}
 .personal-calendar{margin:0 0 24px;padding:22px;background:#f7f9ff;border:1px solid #dfe7f5;border-radius:20px}.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}.calendar-heading h2{margin:4px 0;color:#203853;font-size:22px}.calendar-heading p{margin:4px 0;color:#75859a;font-size:13px}.calendar-symbol{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:#e9efff;color:#4e69bd;font-size:27px}.calendar-form{display:grid;grid-template-columns:1fr;gap:8px;padding:16px;background:white;border:1px solid #e3e9f3;border-radius:14px}.calendar-form label{font-size:12px;color:#526b84}.calendar-form input{width:100%;box-sizing:border-box;border:1px solid #dbe4ef;background:#fbfcfe;padding:12px;border-radius:10px;font:inherit;color:#263e57}.calendar-form .primary-action{justify-self:start}.personal-calendar .subpage-list-title{margin-top:22px}
 
+@media(orientation:landscape) and (max-height:520px){body{padding:10px 18px}#app{min-height:0}.portal-hero{padding:20px 26px;margin:14px 0 18px}.portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:180px;padding:16px}.subpage-heading{margin-bottom:14px}.personal-notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(orientation:landscape) and (max-height:520px){body{padding:10px 18px}#app{min-height:0}.portal-hero{padding:20px 26px;margin:14px 0 18px}.portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:180px;padding:16px}.subpage-heading{margin-bottom:14px}.personal-notes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2f7d5b">
@@ -348,7 +350,7 @@ async function iniciarSincronizacionNube(user){
   if(snap.exists){const data=snap.data()||{};remotePayload=typeof data.payload==='string'?data.payload:'';const remoteState=leerEstadoNube(remotePayload);nextState=localHasData?combinarEstadosNube(localState,remoteState):remoteState;guardarEstadoLocalNube(nextState);if(JSON.stringify(nextState)!==remotePayload)await escribirEstadoNube(nextState,startupRef,startupDevice);else{cloudLastPayload=remotePayload;setCloudStatus('Sincronizado con esta cuenta');}}
   else{nextState=sameOwner?localState:deepClone(DEFAULT_DB);guardarEstadoLocalNube(nextState);await escribirEstadoNube(nextState,startupRef,startupDevice);}
   if(cloudUid!==user.uid||cloudRef!==startupRef)return;localStorage.setItem(LOCAL_OWNER_KEY,user.uid);cloudReady=true;
-  const listenerRef=startupRef,listenerDevice=startupDevice;cloudUnsubscribe=listenerRef.onSnapshot(snapshot=>{if(!snapshot.exists)return;const data=snapshot.data()||{},payload=typeof data.payload==='string'?data.payload:'';if(!payload||payload===cloudLastPayload)return;if(cloudUid!==user.uid||cloudRef!==listenerRef)return;if(data.writerId===listenerDevice){cloudLastPayload=payload;setCloudStatus('Sincronizado con esta cuenta');return;}try{const remote=leerEstadoNube(payload),combined=combinarEstadosNube(db,remote),combinedPayload=JSON.stringify(combined);cloudLastPayload=payload;if(combinedPayload!==JSON.stringify(db))guardarEstadoLocalNube(combined);if(combinedPayload!==payload)programarGuardadoNube();else setCloudStatus('Actualizado desde otro dispositivo');}catch(error){setCloudStatus('No se pudo leer la actualización; la copia local sigue guardada.');console.error('Firestore snapshot:',error);}},error=>{setCloudStatus('Sin conexión con Firestore. La copia local sigue guardada.');console.error('Firestore listener:',error);});
+  const listenerRef=startupRef,listenerDevice=startupDevice;cloudUnsubscribe=listenerRef.onSnapshot(snapshot=>{if(!snapshot.exists)return;const data=snapshot.data()||{},payload=typeof data.payload==='string'?data.payload:'';if(!payload||payload===cloudLastPayload)return;if(cloudUid!==user.uid||cloudRef!==listenerRef)return;if(data.writerId===listenerDevice){cloudLastPayload=payload;setCloudStatus('Sincronizado con esta cuenta');return;}try{const remote=leerEstadoNube(payload),combined=combinarEstadosNube(db,remote),combinedPayload=JSON.stringify(combined);cloudLastPayload=payload;if(combinedPayload!==JSON.stringify(db))guardarEstadoLocalNube(combined);if(combinedPayload!==payload)programarGuardadoNube();else setCloudStatus('Actualizado desde otro dispositivo');}catch(error){setCloudStatus('No se pudo leer la actualización; la copia local sigue guardada.');console.error('Firestore snapshot:',error);}},error=>{setCloudStatus('Sin conexión con Firestore. La copia local sigue guardada.');console.error('Firestore listener:',error);});iniciarSincronizacionPersonalEOE(user);
  }catch(error){if(cloudUid!==user.uid)return;cloudReady=false;const code=String(error&&error.code||'');if(code.includes('permission-denied'))setCloudStatus('Firestore está activo, pero faltan sus reglas de acceso.');else if(code.includes('failed-precondition')||code.includes('not-found'))setCloudStatus('Falta crear la base de Firestore en Firebase.');else setCloudStatus('Sincronización pendiente. La app sigue guardando en este dispositivo.');console.error('Firestore init:',error);}
 }
 
@@ -583,40 +585,9 @@ function descargarTextoInformeWordEOE(texto,nombreAlumno,fechaISO){
   enlace.remove();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-function guardarYDescargarInformeAlumnoEOE(id,curso,turno,modo){
-  const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));
-  if(!alumno)return alert("No se encontró al alumno.");
-  const detalles=document.getElementById("informe-aportes")?.value||"";
-  const fecha=new Date();
-  const informe={
-    id:crearId(),
-    fechaISO:fecha.toISOString(),
-    fechaTexto:fecha.toLocaleDateString("es-AR"),
-    institucion:String(db.nombreEscuela||""),
-    alumno:String(alumno.nombre||""),
-    curso:String(curso||""),
-    detalles:String(detalles),
-    texto:construirInformeFormalEOE(id,curso,detalles,fecha)
-  };
-  const teniaLista=Array.isArray(alumno.informesGenerados);
-  if(!teniaLista)alumno.informesGenerados=[];
-  alumno.informesGenerados.push(informe);
-  if(new Blob([JSON.stringify(db)]).size>700000){
-    alumno.informesGenerados.pop();
-    if(!teniaLista)delete alumno.informesGenerados;
-    alert("El informe supera el espacio disponible para guardarlo en la ficha. Se descargará el documento, pero no quedará guardado en la app.");
-    descargarTextoInformeWordEOE(informe.texto,informe.alumno,informe.fechaISO);
-    return;
-  }
-  if(!guardar()){
-    alumno.informesGenerados.pop();
-    if(!teniaLista)delete alumno.informesGenerados;
-    return;
-  }
-  descargarTextoInformeWordEOE(informe.texto,informe.alumno,informe.fechaISO);
-  refrescarFichaDocumentos(id,curso,turno,modo);
-  alert("El informe se guardó en la ficha del alumno y se descargó como archivo editable en Word.");
-}
+function crearInformeAlumnoEOE(id,curso){const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id));if(!alumno)return null;const detalles=document.getElementById("informe-aportes")?.value||"",fecha=new Date();return {id:crearId(),fechaISO:fecha.toISOString(),fechaTexto:fecha.toLocaleDateString("es-AR"),institucion:String(db.nombreEscuela||""),alumno:String(alumno.nombre||""),curso:String(curso||""),detalles:String(detalles),texto:construirInformeFormalEOE(id,curso,detalles,fecha)}}
+function guardarInformeAlumnoEOE(id,curso,turno,modo){const alumno=(db.listaAlumnos||[]).find(x=>String(x.id)===String(id)),informe=crearInformeAlumnoEOE(id,curso);if(!alumno||!informe)return alert("No se encontró al alumno.");const tenia=Array.isArray(alumno.informesGenerados);if(!tenia)alumno.informesGenerados=[];alumno.informesGenerados.push(informe);if(new Blob([JSON.stringify(db)]).size>700000){alumno.informesGenerados.pop();if(!tenia)delete alumno.informesGenerados;return alert("El informe supera el espacio disponible en la ficha. No se guardó.")}if(!guardar()){alumno.informesGenerados.pop();if(!tenia)delete alumno.informesGenerados;return}refrescarFichaDocumentos(id,curso,turno,modo);alert("Informe guardado en la aplicación. Podés verlo o descargarlo desde Informes guardados.")}
+function descargarNuevoInformeAlumnoEOE(id,curso){const i=crearInformeAlumnoEOE(id,curso);if(!i)return alert("No se encontró al alumno.");descargarTextoInformeWordEOE(i.texto,i.alumno,i.fechaISO)}
 function abrirVistaInformeEOE(titulo,texto){
   let modal=document.getElementById("eoe-informe-preview");
   if(!modal){
@@ -692,7 +663,8 @@ function accionesCompartirAlumnoHTML(id,curso,turno,modo){
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'copiar\','+jsArg(id)+','+jsArg(curso)+')">📋 Copiar texto</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'whatsapp\','+jsArg(id)+','+jsArg(curso)+')">WhatsApp</button>'+
       '<button type="button" onclick="compartirInformeAlumnoEOE(\'correo\','+jsArg(id)+','+jsArg(curso)+')">Correo</button>'+
-      '<button type="button" onclick="guardarYDescargarInformeAlumnoEOE('+jsArg(id)+','+jsArg(curso)+','+jsArg(turno)+','+jsArg(modo)+')">💾 Guardar y descargar editable (.rtf)</button>'+
+      '<button type="button" onclick="guardarInformeAlumnoEOE('+jsArg(id)+','+jsArg(curso)+','+jsArg(turno)+','+jsArg(modo)+')">💾 Guardar en la app</button>'+
+      '<button type="button" onclick="descargarNuevoInformeAlumnoEOE('+jsArg(id)+','+jsArg(curso)+')">⬇ Descargar editable (.rtf)</button>'+
     '</div>'+
     '<details class="informes-guardados"><summary>Informes guardados ('+informes.length+')</summary>'+
       (informes.length?items:'<p class="small">Todavía no guardaste informes para este alumno.</p>')+
@@ -887,29 +859,16 @@ function mostrarEstadisticas(){
 /* ========================= INICIO ========================= */
 
 function buscarAlumnoGlobal(){
-  const q=(document.getElementById("buscador-global")?.value||"").trim().toLowerCase();
-  const box=document.getElementById("resultados-busqueda");
-  if(!box)return;
-  if(!q){ box.innerHTML='<p class="small">Escribí un nombre o apellido para buscar.</p>'; return; }
-  const resultados=(db.listaAlumnos||[]).filter(a=>String(a.nombre||"").toLowerCase().includes(q));
-  if(!resultados.length){
-    box.innerHTML='<div class="alerta">No encontré ningún alumno con ese nombre.</div>';
-    return;
-  }
-  box.innerHTML=resultados.map(a=>{
-    const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"";
-    const tipo=a.tipoSeguimiento==="otro"?"🟡 Seguimiento de trayectorias":"🟢 Fortalecimiento";
-    const cat=a.tipoSeguimiento==="otro"?"":(catInfo[a.cat]?catInfo[a.cat][0]:a.cat||"");
-    const accion=a.tipoSeguimiento==="otro"?`abrirFichaOtro(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`:`abrirFicha(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`;
-    return `<div class="resumen-caja" style="margin:8px 0">
-      <b style="font-size:17px">👤 ${esc(a.nombre)}</b><br>
-      <span class="small">📍 ${esc(a.curso||"Sin curso")} · ${esc(turno||"Sin turno")} · ${tipo}${a.activo===false?" · INACTIVO":""}</span>
-      ${cat?`<br><span class="small">🔤 ${esc(cat)}</span>`:""}
-      <button class="move-btn" onclick="${accion}">📂 Abrir ficha</button>
-    </div>`;
-  }).join("");
+ const q=(document.getElementById("buscador-global")?.value||"").trim().toLowerCase(),box=document.getElementById("resultados-busqueda");if(!box)return;if(!q){box.innerHTML='<p class="small">Escribí un nombre o apellido para buscar.</p>';return}
+ const alumnos=(db.listaAlumnos||[]).filter(a=>String(a.nombre||"").toLowerCase().includes(q)),contactos=[];
+ Object.entries(db.listadosCurso||{}).forEach(([curso,lista])=>(lista||[]).forEach(x=>{if(String(x.nombre||"").toLowerCase().includes(q))contactos.push({x,curso})}));
+ const notas=(leerPersonalEOE().notas||[]).filter(n=>(String(n.titulo||"")+" "+String(n.texto||"")).toLowerCase().includes(q));
+ if(!alumnos.length&&!contactos.length&&!notas.length){box.innerHTML='<div class="alerta">No encontré coincidencias en trayectorias, agenda ni notas.</div>';return}
+ const aa=alumnos.map(a=>{const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"",tipo=a.tipoSeguimiento==="otro"?"🟡 Seguimiento":"🟢 Fortalecimiento",cat=a.tipoSeguimiento==="otro"?"":(catInfo[a.cat]?.[0]||a.cat||""),accion=a.tipoSeguimiento==="otro"?`abrirFichaOtro(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`:`abrirFicha(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`;return `<div class="resumen-caja"><b>👤 ${esc(a.nombre)}</b><br><span class="small">${esc(a.curso||"Sin curso")} · ${esc(turno)} · ${tipo}${cat?" · "+esc(cat):""}</span><button class="move-btn" onclick="${accion}">Abrir ficha</button></div>`}).join("");
+ const cc=contactos.map(({x,curso})=>`<div class="resumen-caja"><b>📱 ${esc(x.nombre)}</b><br><span class="small">Agenda del curso · ${esc(curso)}</span><button class="move-btn" onclick="mostrarListadoAlumnosCursoEOE(${jsArg(curso)},${jsArg(obtenerTurnoDeCurso(curso)||"")})">Abrir listado</button></div>`).join("");
+ const nn=notas.map(n=>`<div class="resumen-caja"><b>📝 ${esc(n.titulo||"Nota personal")}</b><br><span class="small">${esc(n.fecha||"Nota personal")}</span><p>${esc((n.texto||"").slice(0,180))}</p><button class="move-btn" onclick="mostrarEspacioPersonalEOE()">Abrir notas</button></div>`).join("");
+ box.innerHTML=aa+cc+nn;
 }
-
 function limpiarBusquedaGlobal(){
   const input=document.getElementById("buscador-global");
   const box=document.getElementById("resultados-busqueda");
@@ -1043,9 +1002,21 @@ function mostrarInicioSeguimiento(){
    Esta versión todavía guarda notas y configuración localmente.
 ========================================================= */
 const EOE_PERSONAL_KEY = "eoe_red_espacio_personal_v1";
+const EOE_PERSONAL_OWNER_KEY = "eoe_red_espacio_personal_owner_v1";
 const EOE_PORTAL_KEY = "eoe_red_portal_config_v1";
-function leerPersonalEOE(){try{const d=JSON.parse(localStorage.getItem(EOE_PERSONAL_KEY)||'{"notas":[],"borradores":[],"eventos":[]}');if(!Array.isArray(d.notas))d.notas=[];if(!Array.isArray(d.eventos))d.eventos=[];return d}catch(e){return {notas:[],borradores:[],eventos:[]}}}
-function guardarPersonalEOE(d){try{localStorage.setItem(EOE_PERSONAL_KEY,JSON.stringify(d));return true}catch(e){alert('No se pudo guardar en este dispositivo.');return false}}
+let personalCloudRef=null,personalCloudUnsubscribe=null,personalCloudUid="",personalCloudDeviceId="",personalCloudReady=false,personalCloudTimer=null,personalCloudLastPayload="";
+function leerPersonalEOE(){try{const d=JSON.parse(localStorage.getItem(EOE_PERSONAL_KEY)||'{"notas":[],"borradores":[],"eventos":[]}');if(!Array.isArray(d.notas))d.notas=[];if(!Array.isArray(d.eventos))d.eventos=[];if(!Array.isArray(d.borradores))d.borradores=[];return d}catch(e){return {notas:[],borradores:[],eventos:[]}}}
+function guardarPersonalEOE(d){try{localStorage.setItem(EOE_PERSONAL_KEY,JSON.stringify(d));programarGuardadoPersonalEOE();return true}catch(e){alert('No se pudo guardar en este dispositivo.');return false}}
+function unirPersonalEOE(local,remote){const m=new Map();[...(remote||[]),...(local||[])].forEach(x=>{if(x&&x.id!=null)m.set(String(x.id),x)});return [...m.values()]}
+function programarGuardadoPersonalEOE(){clearTimeout(personalCloudTimer);if(!personalCloudReady||!personalCloudRef)return;personalCloudTimer=setTimeout(async()=>{const ref=personalCloudRef,uid=personalCloudUid,payload=JSON.stringify(leerPersonalEOE());try{await ref.set({schemaVersion:1,payload,writerId:personalCloudDeviceId,updatedAt:new Date().toISOString()});if(personalCloudUid===uid)personalCloudLastPayload=payload}catch(e){console.error("Firestore personal save:",e)}},600)}
+async function iniciarSincronizacionPersonalEOE(user){
+ if(personalCloudUnsubscribe){personalCloudUnsubscribe();personalCloudUnsubscribe=null}clearTimeout(personalCloudTimer);personalCloudReady=false;personalCloudUid=user.uid;personalCloudDeviceId=cloudDeviceId||obtenerIdDispositivo();if(!window.cloudDb)return;
+ const owner=localStorage.getItem(EOE_PERSONAL_OWNER_KEY)||"",same=!owner||owner===user.uid;if(owner&&owner!==user.uid){try{localStorage.setItem("eoe_backup_personal_"+owner,localStorage.getItem(EOE_PERSONAL_KEY)||"")}catch(e){}}
+ const ref=window.cloudDb.collection("users").doc(user.uid).collection("appData").doc("personal");personalCloudRef=ref;
+ try{const snap=await ref.get();if(personalCloudUid!==user.uid||personalCloudRef!==ref)return;const local=same?leerPersonalEOE():{notas:[],eventos:[],borradores:[]},remote=snap.exists?JSON.parse(snap.data()?.payload||'{"notas":[],"eventos":[],"borradores":[]}'):{notas:[],eventos:[],borradores:[]},merged=snap.exists?{notas:unirPersonalEOE(local.notas,remote.notas),eventos:unirPersonalEOE(local.eventos,remote.eventos),borradores:unirPersonalEOE(local.borradores,remote.borradores)}:local,payload=JSON.stringify(merged);localStorage.setItem(EOE_PERSONAL_KEY,payload);localStorage.setItem(EOE_PERSONAL_OWNER_KEY,user.uid);personalCloudLastPayload=payload;if(!snap.exists||payload!==(snap.data()?.payload||""))await ref.set({schemaVersion:1,payload,writerId:personalCloudDeviceId,updatedAt:new Date().toISOString()});if(personalCloudUid!==user.uid)return;personalCloudReady=true;
+ personalCloudUnsubscribe=ref.onSnapshot(s=>{if(!s.exists)return;const data=s.data()||{},p=String(data.payload||"");if(!p||p===personalCloudLastPayload||personalCloudUid!==user.uid)return;if(data.writerId===personalCloudDeviceId){personalCloudLastPayload=p;return}try{localStorage.setItem(EOE_PERSONAL_KEY,p);personalCloudLastPayload=p;if(document.querySelector(".portal-subpage"))mostrarEspacioPersonalEOE()}catch(e){console.error("Firestore personal update:",e)}},e=>console.error("Firestore personal listener:",e));
+ }catch(e){console.error("Firestore personal init:",e)}
+}
 function leerPortalEOE(){try{return JSON.parse(localStorage.getItem(EOE_PORTAL_KEY)||'{"nombre":"Mi espacio","instituciones":[]}')}catch(e){return {nombre:'Mi espacio',instituciones:[]}}}
 function guardarPortalEOE(d){try{localStorage.setItem(EOE_PORTAL_KEY,JSON.stringify(d));return true}catch(e){return false}}
 function mostrarInicio(){
@@ -1068,12 +1039,13 @@ function mostrarInicio(){
 }
 function mostrarEspacioPersonalEOE(){
  const d=leerPersonalEOE();
- document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon personal-icon">✎</div><div><div class="eyebrow">ESPACIO PRIVADO</div><h1>Mi espacio personal</h1><p>Un lugar para guardar ideas, notas y borradores de trabajo.</p></div></div><section class="personal-calendar"><div class="calendar-heading"><div><div class="eyebrow">ORGANIZACIÓN PERSONAL</div><h2>Mi calendario</h2><p>Agendá reuniones, actividades y recordatorios privados.</p></div><span class="calendar-symbol">▦</span></div><div class="calendar-form"><label for="eoe-evento-fecha">Fecha</label><input id="eoe-evento-fecha" type="date"><label for="eoe-evento-titulo">Actividad</label><input id="eoe-evento-titulo" placeholder="Ej. Reunión de equipo"><label for="eoe-evento-detalle">Detalle (opcional)</label><input id="eoe-evento-detalle" placeholder="Horario, lugar o recordatorio"><button class="primary-action" onclick="guardarEventoPersonalEOE()">＋ Agendar actividad</button></div><h3 class="subpage-list-title">Próximas actividades <span>${(d.eventos||[]).length}</span></h3><div class="personal-notes">${(d.eventos||[]).slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(ev=>`<article class="note-card"><div class="note-date">${esc(ev.fecha||'Sin fecha')}</div><h3>${esc(ev.titulo||'Actividad')}</h3><p>${esc(ev.detalle||'')}</p><button class="note-delete" onclick="eliminarEventoPersonalEOE('${String(ev.id).replace(/'/g,"\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no tenés actividades agendadas.</div>'}</div><p class="local-warning">El calendario es personal y local en este dispositivo. Todavía no sincroniza con otras cuentas ni envía notificaciones.</p></section><div class="personal-editor"><h2>Notas y borradores</h2><label for="eoe-nota-titulo">Título</label><input id="eoe-nota-titulo" placeholder="Ej. Ideas para la reunión de equipo"><label for="eoe-nota-texto">Nota o borrador</label><textarea id="eoe-nota-texto" rows="6" placeholder="Escribí acá tus ideas, acuerdos, recordatorios o un borrador..."></textarea><button class="primary-action" onclick="guardarNotaPersonalEOE()">＋ Guardar nota</button></div><h2 class="subpage-list-title">Mis notas guardadas <span>${d.notas.length}</span></h2><div class="personal-notes">${d.notas.slice().reverse().map(n=>`<article class="note-card"><div class="note-date">${esc(n.fecha||'Sin fecha')}</div><h3>${esc(n.titulo||'Nota sin título')}</h3><p>${esc(n.texto||'')}</p><div class="share-actions"><button onclick="accionCompartirEOE('copiar',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">Copiar</button><button onclick="accionCompartirEOE('whatsapp',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">WhatsApp</button><button onclick="accionCompartirEOE('correo',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">Correo</button></div><button class="note-delete" onclick="eliminarNotaPersonalEOE('${String(n.id).replace(/'/g,"\\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no guardaste notas. Podés empezar con una idea o un borrador.</div>'}</div><p class="local-warning">🔒 Estas notas se guardan en este navegador. Todavía no están sincronizadas con una cuenta ni con otros dispositivos.</p></div>`;
+ document.getElementById('app').innerHTML=`<div class="portal-subpage"><button class="portal-back" onclick="mostrarInicio()">← Inicio</button><div class="subpage-heading"><div class="subpage-icon personal-icon">✎</div><div><div class="eyebrow">ESPACIO PRIVADO</div><h1>Mi espacio personal</h1><p>Un lugar para guardar ideas, notas y borradores de trabajo.</p></div></div><section class="personal-calendar"><div class="calendar-heading"><div><div class="eyebrow">ORGANIZACIÓN PERSONAL</div><h2>Mi calendario</h2><p>Agendá reuniones, actividades y recordatorios privados.</p></div><span class="calendar-symbol">▦</span></div><div class="calendar-form"><label for="eoe-evento-fecha">Fecha</label><input id="eoe-evento-fecha" type="date"><label for="eoe-evento-titulo">Actividad</label><input id="eoe-evento-titulo" placeholder="Ej. Reunión de equipo"><label for="eoe-evento-detalle">Detalle (opcional)</label><input id="eoe-evento-detalle" placeholder="Horario, lugar o recordatorio"><button class="primary-action" onclick="guardarEventoPersonalEOE()">＋ Agendar actividad</button></div><h3 class="subpage-list-title">Próximas actividades <span>${(d.eventos||[]).length}</span></h3><div class="personal-notes">${(d.eventos||[]).slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(ev=>`<article class="note-card"><div class="note-date">${esc(ev.fecha||'Sin fecha')}</div><h3>${esc(ev.titulo||'Actividad')}</h3><p>${esc(ev.detalle||'')}</p><button class="note-delete" onclick="eliminarEventoPersonalEOE('${String(ev.id).replace(/'/g,"\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no tenés actividades agendadas.</div>'}</div><p class="local-warning">El calendario es personal y local en este dispositivo. Todavía no sincroniza con otras cuentas ni envía notificaciones.</p></section><div class="personal-editor"><h2>Notas y borradores</h2><label for="eoe-nota-titulo">Título</label><input id="eoe-nota-titulo" placeholder="Ej. Ideas para la reunión de equipo"><label for="eoe-nota-texto">Nota o borrador</label><textarea id="eoe-nota-texto" rows="6" placeholder="Escribí acá tus ideas, acuerdos, recordatorios o un borrador..."></textarea><button class="primary-action" onclick="guardarNotaPersonalEOE()">＋ Guardar nota</button></div><h2 class="subpage-list-title">Mis notas guardadas <span>${d.notas.length}</span></h2><div class="personal-notes">${d.notas.slice().reverse().map(n=>`<article class="note-card"><div class="note-date">${esc(n.fecha||'Sin fecha')}</div><h3>${esc(n.titulo||'Nota sin título')}</h3><p>${esc(n.texto||'')}</p><div class="share-actions"><button onclick="accionCompartirEOE('copiar',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">Copiar</button><button onclick="accionCompartirEOE('whatsapp',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">WhatsApp</button><button onclick="accionCompartirEOE('correo',${jsArg(n.titulo||'Nota sin título')},${jsArg('Fecha: '+(n.fecha||'Sin fecha')+'\n\n'+(n.texto||''))})">Correo</button></div><button type="button" class="secondary-action" onclick="editarNotaPersonalEOE('${String(n.id).replace(/'/g,"\\'")}')">Editar nota</button><button class="note-delete" onclick="eliminarNotaPersonalEOE('${String(n.id).replace(/'/g,"\\'")}')">Eliminar</button></article>`).join('')||'<div class="empty-state">Todavía no guardaste notas. Podés empezar con una idea o un borrador.</div>'}</div><p class="local-warning">🔒 Notas y actividades sincronizadas con la cuenta cuando hay conexión. Al iniciar sesión con la misma cuenta se comparten entre dispositivos.</p></div>`;
 }
 function guardarEventoPersonalEOE(){const fecha=document.getElementById('eoe-evento-fecha').value,titulo=document.getElementById('eoe-evento-titulo').value.trim(),detalle=document.getElementById('eoe-evento-detalle').value.trim();if(!fecha||!titulo){alert('Elegí una fecha y escribí el nombre de la actividad.');return}const d=leerPersonalEOE();d.eventos.push({id:crearId(),fecha,titulo,detalle});if(guardarPersonalEOE(d))mostrarEspacioPersonalEOE()}
 function eliminarEventoPersonalEOE(id){if(!confirm('¿Eliminar esta actividad del calendario?'))return;const d=leerPersonalEOE();d.eventos=(d.eventos||[]).filter(e=>String(e.id)!==String(id));guardarPersonalEOE(d);mostrarEspacioPersonalEOE()}
 function abrirTrayectoriasInstitucionActivaEOE(){const id=db.institucionActivaId;if(id){mostrarInicioSeguimiento();return}mostrarInstitucionesEOE();alert('Primero elegí una institución. Desde su ficha podés entrar a sus trayectorias.');}
 function guardarNotaPersonalEOE(){const titulo=document.getElementById('eoe-nota-titulo').value.trim(),texto=document.getElementById('eoe-nota-texto').value.trim();if(!titulo&&!texto){alert('Escribí un título o el contenido de la nota.');return}const d=leerPersonalEOE();d.notas.push({id:crearId(),titulo:titulo||'Nota sin título',texto,fecha:new Date().toLocaleDateString('es-AR')});if(guardarPersonalEOE(d))mostrarEspacioPersonalEOE()}
+function editarNotaPersonalEOE(id){const d=leerPersonalEOE(),n=d.notas.find(x=>String(x.id)===String(id));if(!n)return;const titulo=prompt("Título de la nota:",n.titulo||"");if(titulo===null)return;const texto=prompt("Contenido de la nota:",n.texto||"");if(texto===null)return;n.titulo=titulo.trim()||"Nota sin título";n.texto=texto;if(guardarPersonalEOE(d))mostrarEspacioPersonalEOE()}
 function eliminarNotaPersonalEOE(id){if(!confirm('¿Eliminar esta nota personal?'))return;const d=leerPersonalEOE();d.notas=d.notas.filter(n=>String(n.id)!==String(id));guardarPersonalEOE(d);mostrarEspacioPersonalEOE()}
 function mostrarInstitucionesEOE(){
  const insts=Array.isArray(db.instituciones)?db.instituciones:[];
@@ -1506,34 +1478,26 @@ function obtenerContactosCursoEOE(curso){
  return db.listadosCurso[curso];
 }
 function mostrarListadoAlumnosCursoEOE(curso,turno){
- const contactos=obtenerContactosCursoEOE(curso),cursos=obtenerTodosLosCursos().filter(x=>x!==curso);
- const opciones=cursos.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
- const filas=contactos.map(x=>{
-  const tel=String(x.telefono||"").replace(/[^0-9+() -]/g,"").trim();
-  return '<article class="historial-tarjeta" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>👤 '+esc(x.nombre||"Sin nombre")+'</b><br>'+
-   (tel?'<a href="tel:'+encodeURIComponent(tel)+'">📞 '+esc(x.telefono)+'</a>':'<span class="small">Sin teléfono</span>')+'</div>'+
-   '<div class="share-actions"><button type="button" onclick="editarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Editar</button><button type="button" onclick="eliminarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Quitar</button></div></article>';
- }).join("");
- document.getElementById("app").innerHTML='<h2>📱 Listado de alumnos · '+esc(curso)+'</h2><p class="small">Agenda de consulta del curso. Independiente de las trayectorias y sus estadísticas.</p>'+
-  '<button class="volver" onclick="verDetalle('+jsArg(curso)+','+jsArg(turno)+')">← Volver al curso</button>'+
-  '<section class="desc-box"><label for="contacto-curso-nombre">Nombre y apellido</label><input id="contacto-curso-nombre" autocomplete="off" placeholder="Nombre del alumno"><label for="contacto-curso-telefono">Teléfono</label><input id="contacto-curso-telefono" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 2342 123456"><button class="add-btn" type="button" onclick="agregarContactoListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">➕ Agregar al listado</button></section>'+
-  '<section class="ficha-box"><h3>Alumnos y teléfonos ('+contactos.length+')</h3>'+(contactos.length?filas:'<p class="small">Todavía no hay nombres en el listado.</p>')+'</section>'+
-  (contactos.length&&cursos.length?'<section class="desc-box"><h3>🔁 Preparar el próximo ciclo lectivo</h3><p class="small">Traslada todos estos nombres y teléfonos al curso elegido y deja vacío el listado actual. Las fichas e historiales no se modifican.</p><label for="curso-destino-listado">Curso de destino</label><select id="curso-destino-listado"><option value="">Elegí un curso</option>'+opciones+'</select><button class="primary-action" type="button" onclick="trasladarListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">Trasladar listado completo</button></section>':'');
+ const contactos=obtenerContactosCursoEOE(curso),cursos=obtenerTodosLosCursos().filter(x=>x!==curso),opciones=cursos.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+ const filas=contactos.map(x=>{const ts=Array.isArray(x.telefonos)?x.telefonos:(x.telefono?[{numero:x.telefono,referencia:""}]:[]),linea=ts.map(t=>{const n=String(t.numero||""),safe=n.replace(/[^0-9+() -]/g,"");return safe?'<div><a href="tel:'+encodeURIComponent(safe)+'">📞 '+esc(n)+'</a>'+(t.referencia?' <span class="small">· '+esc(t.referencia)+'</span>':'')+'</div>':''}).join("");return '<article class="historial-tarjeta"><b>👤 '+esc(x.nombre||"Sin nombre")+'</b>'+(linea||'<p class="small">Sin teléfono</p>')+'<div class="share-actions"><button onclick="agregarTelefonoContactoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">＋ Teléfono</button><button onclick="editarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Editar</button><button onclick="eliminarContactoListadoEOE('+jsArg(curso)+','+jsArg(turno)+','+jsArg(x.id)+')">Quitar</button></div></article>'}).join("");
+ document.getElementById("app").innerHTML='<h2>📱 Listado de alumnos · '+esc(curso)+'</h2><p class="small">Agenda rápida del curso, separada de los registros de seguimiento.</p><button class="volver" onclick="verDetalle('+jsArg(curso)+','+jsArg(turno)+')">← Volver al curso</button><section class="desc-box"><label>Nombre y apellido</label><input id="contacto-curso-nombre" placeholder="Nombre del alumno"><label>Teléfono (opcional)</label><input id="contacto-curso-telefono" type="tel" inputmode="tel" placeholder="Ej.: 2342 123456"><label>Referencia</label><input id="contacto-curso-referencia" placeholder="Madre, tío, vecino…"><button class="add-btn" onclick="agregarContactoListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">➕ Agregar al listado</button></section><div class="share-actions"><button onclick="compartirListadoTelefonosEOE('+jsArg(curso)+')">↗ Compartir listado completo</button></div><section class="ficha-box"><h3>Alumnos y teléfonos ('+contactos.length+')</h3>'+(contactos.length?filas:'<p class="small">Todavía no hay nombres en el listado.</p>')+'</section>'+
+ (contactos.length&&cursos.length?'<section class="desc-box"><h3>🔁 Preparar el próximo ciclo lectivo</h3><p class="small">Traslada todos estos nombres y teléfonos al curso elegido y deja vacío el listado actual. Las fichas e historiales no se modifican.</p><label for="curso-destino-listado">Curso de destino</label><select id="curso-destino-listado"><option value="">Elegí un curso</option>'+opciones+'</select><button class="primary-action" onclick="trasladarListadoCursoEOE('+jsArg(curso)+','+jsArg(turno)+')">Trasladar listado completo</button></section>':'');
 }
 function agregarContactoListadoCursoEOE(curso,turno){
- const nombre=document.getElementById("contacto-curso-nombre")?.value.trim()||"",telefono=(document.getElementById("contacto-curso-telefono")?.value||"").trim();
- if(!nombre)return alert("Ingresá el nombre y apellido.");
- obtenerContactosCursoEOE(curso).push({id:crearId(),nombre,telefono});if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+ const nombre=document.getElementById("contacto-curso-nombre")?.value.trim()||"",telefono=(document.getElementById("contacto-curso-telefono")?.value||"").trim(),referencia=(document.getElementById("contacto-curso-referencia")?.value||"").trim();if(!nombre)return alert("Ingresá el nombre y apellido.");
+ obtenerContactosCursoEOE(curso).push({id:crearId(),nombre,telefono,telefonos:telefono?[{id:crearId(),numero:telefono,referencia}]:[]});if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+}
+function agregarTelefonoContactoEOE(curso,turno,id){
+ const x=obtenerContactosCursoEOE(curso).find(a=>String(a.id)===String(id));if(!x)return;const numero=prompt("Número de teléfono:");if(numero===null||!numero.trim())return;const referencia=prompt("¿De quién es este teléfono? (madre, tío, vecino…)","")||"";if(!Array.isArray(x.telefonos))x.telefonos=x.telefono?[{id:crearId(),numero:x.telefono,referencia:""}]:[];x.telefonos.push({id:crearId(),numero:numero.trim(),referencia:referencia.trim()});if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+}
+function compartirListadoTelefonosEOE(curso){
+ const contactos=obtenerContactosCursoEOE(curso);if(!contactos.length)return alert("El listado está vacío.");const text="Listado de alumnos · "+curso+"\n\n"+contactos.map(x=>{const ts=Array.isArray(x.telefonos)?x.telefonos:(x.telefono?[{numero:x.telefono}]:[]);return x.nombre+"\n"+(ts.map(t=>"  "+(t.referencia?t.referencia+": ":"")+t.numero).join("\n")||"  Sin teléfono")}).join("\n\n");if(navigator.share){navigator.share({title:"Listado de alumnos · "+curso,text}).catch(()=>{});return}if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>alert("Listado copiado. Ya podés pegarlo en WhatsApp o correo."),()=>alert(text));return}alert(text);
 }
 function editarContactoListadoEOE(curso,turno,id){
- const x=obtenerContactosCursoEOE(curso).find(a=>String(a.id)===String(id));if(!x)return;
- const nombre=prompt("Nombre y apellido:",x.nombre||"");if(nombre===null)return;if(!nombre.trim())return alert("El nombre no puede quedar vacío.");
- const telefono=prompt("Teléfono:",x.telefono||"");if(telefono===null)return;
- x.nombre=nombre.trim();x.telefono=telefono.trim();if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
+ const x=obtenerContactosCursoEOE(curso).find(a=>String(a.id)===String(id));if(!x)return;const nombre=prompt("Nombre y apellido:",x.nombre||"");if(nombre===null||!nombre.trim())return;const ts=Array.isArray(x.telefonos)?x.telefonos:(x.telefono?[{numero:x.telefono,referencia:""}]:[]),valor=ts.map(t=>(t.referencia?t.referencia+": ":"")+t.numero).join("\n"),nuevo=prompt("Teléfonos, uno por línea; usá Referencia: número",valor);if(nuevo===null)return;x.nombre=nombre.trim();x.telefonos=nuevo.split(/\r?\n/).map(linea=>{const p=linea.indexOf(":");return {id:crearId(),referencia:p>=0?linea.slice(0,p).trim():"",numero:(p>=0?linea.slice(p+1):linea).trim()}}).filter(t=>t.numero);x.telefono=x.telefonos[0]?.numero||"";if(guardar())mostrarListadoAlumnosCursoEOE(curso,turno);
 }
 function eliminarContactoListadoEOE(curso,turno,id){
- const lista=obtenerContactosCursoEOE(curso),i=lista.findIndex(x=>String(x.id)===String(id));if(i<0||!confirm("¿Quitar este nombre y teléfono del listado?"))return;
- const [quitado]=lista.splice(i,1);if(!guardar()){lista.splice(i,0,quitado);return;}mostrarListadoAlumnosCursoEOE(curso,turno);
+ const lista=obtenerContactosCursoEOE(curso),i=lista.findIndex(x=>String(x.id)===String(id));if(i<0||!confirm("¿Quitar este nombre y teléfono del listado?"))return;const [quitado]=lista.splice(i,1);if(!guardar()){lista.splice(i,0,quitado);return}mostrarListadoAlumnosCursoEOE(curso,turno);
 }
 function trasladarListadoCursoEOE(origenCurso,turno){
  const destino=document.getElementById("curso-destino-listado")?.value||"";if(!destino)return alert("Elegí el curso de destino.");if(destino===origenCurso)return alert("Elegí un curso distinto.");
@@ -1955,7 +1919,7 @@ function abrirFicha(id,c,t){
             <label>Dificultades / necesidades</label><textarea id="flex-dificultades" placeholder="¿Qué dificultades o necesidades se observaron?"></textarea>
             <label>Observación profesional</label><textarea id="flex-obs" placeholder="Registro abierto..."></textarea>
             <label>🎯 Qué continuar trabajando</label><textarea id="flex-proximo" placeholder="Aspectos a retomar o fortalecer..."></textarea>
-            <button id="btn-flex" style="background:#27ae60" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar Registro Definitivamente</button>
+            <button id="btn-flex" style="background:#27ae60" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar y seguir con este alumno</button><button type="button" class="secondary-action" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)},true)">Guardar y volver al curso</button>
           </div></details>
           <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar Alumno</button>
           <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
@@ -2096,7 +2060,7 @@ function abrirFicha(id,c,t){
           <label><small>Redacción generada (editable)</small></label>
           <textarea id="reg-obs-generada"></textarea>
 
-          <button id="btn-guardar-reg" onclick="guardarRegistroEstructurado(${jsArg(id)},${jsArg(c)},${jsArg(t)})" style="background:#27ae60;font-size:16px;padding:15px">💾 GUARDAR REGISTRO DEFINITIVAMENTE</button>
+          <button id="btn-guardar-reg" onclick="guardarRegistroEstructurado(${jsArg(id)},${jsArg(c)},${jsArg(t)})" style="background:#27ae60;font-size:16px;padding:15px">💾 Guardar y seguir con este alumno</button><button type="button" class="secondary-action" onclick="guardarRegistroEstructurado(${jsArg(id)},${jsArg(c)},${jsArg(t)},true)">Guardar y volver al curso</button>
           <p class="small">El historial anterior se conserva. Cada guardado agrega un nuevo registro.</p>
         </div></details>
 
@@ -2196,17 +2160,11 @@ function moverAlumnoCurso(id){
 }
 
 function moverAlumno(id,c,t){
-  const a=db.listaAlumnos.find(x=>x.id===id);
-  if(!a)return;
-  const destino=document.getElementById("select-cat-mover").value;
-  if(destino===a.cat)return alert("El alumno ya pertenece a esa categoría.");
-  if(!confirm("¿Mover a "+a.nombre+" a la nueva categoría? Se conservará el mismo ID y TODO su historial.\n\nNo se crea otro alumno: solamente cambia su categoría."))return;
-  // IMPORTANTE: se modifica el mismo objeto/alumno. No se hace push y no se crea un nuevo ID.
-  a.cat=destino;
-  if(guardar()){
-    alert("Alumno movido. Su historial fue conservado y no se creó ningún duplicado.");
-    verCats(c,t);
-  }
+ const a=db.listaAlumnos.find(x=>String(x.id)===String(id)),sel=document.getElementById("select-cat-mover");if(!a)return alert("No se encontró al alumno.");if(!sel)return alert("No aparece el selector de categoría.");
+ const origen=a.cat,destino=String(sel.value||"").trim();if(!destino)return alert("Elegí una categoría.");if(destino===origen)return alert("El alumno ya pertenece a esa categoría.");
+ if(!confirm("¿Mover a "+a.nombre+" de "+(catInfo[origen]?.[0]||origen)+" a "+(catInfo[destino]?.[0]||destino)+"? Se conservarán el mismo alumno, su ID y todo el historial."))return;
+ a.cat=destino;if(!guardar()){a.cat=origen;return}const ver=db.listaAlumnos.find(x=>String(x.id)===String(id));if(!ver||ver.cat!==destino)return alert("El cambio no quedó confirmado. La ficha permanece abierta.");
+ alert("Alumno movido correctamente; se conservan ficha, ID e historial.");verCats(c,t);
 }
 
 function copiarAlumno(id,c,t){
@@ -2348,7 +2306,7 @@ function generarRedaccionAutomatica(){
 }
 
 
-function guardarRegistroFlexible(id,c,t){
+function guardarRegistroFlexible(id,c,t,volverAlCurso=false){
   const btn=document.getElementById("btn-flex");
   if(btn){btn.disabled=true;btn.innerText="⏳ Guardando...";}
   try{
@@ -2385,7 +2343,7 @@ function guardarRegistroFlexible(id,c,t){
 
     db=nuevoEstado;
     alert("✅ Registro guardado definitivamente. Historial anterior conservado.");
-    abrirFicha(id,c,t);
+    if(volverAlCurso)volverAListaAlumnoEOE(id,c,t,alumno.tipoSeguimiento==="otro");else abrirFicha(id,c,t);
   }catch(e){
     console.error(e);
     alert("❌ No se pudo guardar. Los registros anteriores fueron conservados.\\n\\n"+e.message);
@@ -2398,7 +2356,7 @@ function guardarRegistroFlexible(id,c,t){
    La operación agrega un registro. Nunca reemplaza el historial.
 ========================================================= */
 
-function guardarRegistroEstructurado(id,c,t){
+function guardarRegistroEstructurado(id,c,t,volverAlCurso=false){
   const btn=document.getElementById("btn-guardar-reg");
   if(btn){btn.disabled=true;btn.innerText="⏳ Guardando...";}
 
@@ -2483,7 +2441,7 @@ function guardarRegistroEstructurado(id,c,t){
     }
 
     alert("✅ Registro guardado definitivamente.\\n\\nHistorial anterior conservado: "+historialAnterior.length+"\\nRegistros totales: "+histVerificado.length);
-    abrirFicha(id,c,t);
+    if(volverAlCurso)volverAListaAlumnoEOE(id,c,t,alumno.tipoSeguimiento==="otro");else abrirFicha(id,c,t);
 
   }catch(error){
     console.error("Error al guardar registro:",error);
