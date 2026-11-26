@@ -858,14 +858,23 @@ function mostrarEstadisticas(){
 
 /* ========================= INICIO ========================= */
 
+function abrirAlumnoDesdeBusquedaEOE(instId,id,curso,turno,otro){
+ const actual=db.institucionActivaId;if(instId&&instId!==actual){cargarInstitucion(instId);setTimeout(()=>otro?abrirFichaOtro(id,curso,turno):abrirFicha(id,curso,turno),0);return}
+ otro?abrirFichaOtro(id,curso,turno):abrirFicha(id,curso,turno);
+}
+function abrirListadoDesdeBusquedaEOE(instId,curso,turno){
+ if(instId&&instId!==db.institucionActivaId){cargarInstitucion(instId);setTimeout(()=>mostrarListadoAlumnosCursoEOE(curso,turno),0);return}
+ mostrarListadoAlumnosCursoEOE(curso,turno);
+}
 function buscarAlumnoGlobal(){
  const q=(document.getElementById("buscador-global")?.value||"").trim().toLowerCase(),box=document.getElementById("resultados-busqueda");if(!box)return;if(!q){box.innerHTML='<p class="small">Escribí un nombre o apellido para buscar.</p>';return}
- const alumnos=(db.listaAlumnos||[]).filter(a=>String(a.nombre||"").toLowerCase().includes(q)),contactos=[];
- Object.entries(db.listadosCurso||{}).forEach(([curso,lista])=>(lista||[]).forEach(x=>{if(String(x.nombre||"").toLowerCase().includes(q))contactos.push({x,curso})}));
+ const bases=(db.instituciones||[]).map(inst=>({id:inst.id,nombre:inst.nombreEscuela,alumnos:inst.listaAlumnos||[],listados:inst.listadosCurso||{}}));
+ if(!bases.some(x=>x.id===db.institucionActivaId))bases.push({id:db.institucionActivaId,nombre:db.nombreEscuela,alumnos:db.listaAlumnos||[],listados:db.listadosCurso||{}});
+ const alumnos=[],contactos=[];bases.forEach(base=>{(base.alumnos||[]).filter(a=>String(a.nombre||"").toLowerCase().includes(q)).forEach(a=>alumnos.push({a,base}));Object.entries(base.listados||{}).forEach(([curso,lista])=>(lista||[]).filter(x=>String(x.nombre||"").toLowerCase().includes(q)).forEach(x=>contactos.push({x,curso,base})))});
  const notas=(leerPersonalEOE().notas||[]).filter(n=>(String(n.titulo||"")+" "+String(n.texto||"")).toLowerCase().includes(q));
  if(!alumnos.length&&!contactos.length&&!notas.length){box.innerHTML='<div class="alerta">No encontré coincidencias en trayectorias, agenda ni notas.</div>';return}
- const aa=alumnos.map(a=>{const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"",tipo=a.tipoSeguimiento==="otro"?"🟡 Seguimiento":"🟢 Fortalecimiento",cat=a.tipoSeguimiento==="otro"?"":(catInfo[a.cat]?.[0]||a.cat||""),accion=a.tipoSeguimiento==="otro"?`abrirFichaOtro(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`:`abrirFicha(${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)})`;return `<div class="resumen-caja"><b>👤 ${esc(a.nombre)}</b><br><span class="small">${esc(a.curso||"Sin curso")} · ${esc(turno)} · ${tipo}${cat?" · "+esc(cat):""}</span><button class="move-btn" onclick="${accion}">Abrir ficha</button></div>`}).join("");
- const cc=contactos.map(({x,curso})=>`<div class="resumen-caja"><b>📱 ${esc(x.nombre)}</b><br><span class="small">Agenda del curso · ${esc(curso)}</span><button class="move-btn" onclick="mostrarListadoAlumnosCursoEOE(${jsArg(curso)},${jsArg(obtenerTurnoDeCurso(curso)||"")})">Abrir listado</button></div>`).join("");
+ const aa=alumnos.map(({a,base})=>{const turno=Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(a.curso))||"",otro=a.tipoSeguimiento==="otro",tipo=otro?"🟡 Seguimiento":"🟢 Fortalecimiento",cat=otro?"":(catInfo[a.cat]?.[0]||a.cat||"");return `<div class="resumen-caja"><b>👤 ${esc(a.nombre)}</b><br><span class="small">${esc(base.nombre||"Institución")} · ${esc(a.curso||"Sin curso")} · ${tipo}${cat?" · "+esc(cat):""}</span><button class="move-btn" onclick="abrirAlumnoDesdeBusquedaEOE(${jsArg(base.id)},${jsArg(a.id)},${jsArg(a.curso)},${jsArg(turno)},${otro})">Abrir ficha</button></div>`}).join("");
+ const cc=contactos.map(({x,curso,base})=>`<div class="resumen-caja"><b>📱 ${esc(x.nombre)}</b><br><span class="small">${esc(base.nombre||"Institución")} · Agenda del curso · ${esc(curso)}</span><button class="move-btn" onclick="abrirListadoDesdeBusquedaEOE(${jsArg(base.id)},${jsArg(curso)},${jsArg(Object.keys(db.cursosNombres||{}).find(t=>(db.cursosNombres[t]||[]).includes(curso))||"")})">Abrir listado</button></div>`).join("");
  const nn=notas.map(n=>`<div class="resumen-caja"><b>📝 ${esc(n.titulo||"Nota personal")}</b><br><span class="small">${esc(n.fecha||"Nota personal")}</span><p>${esc((n.texto||"").slice(0,180))}</p><button class="move-btn" onclick="mostrarEspacioPersonalEOE()">Abrir notas</button></div>`).join("");
  box.innerHTML=aa+cc+nn;
 }
@@ -1014,7 +1023,7 @@ async function iniciarSincronizacionPersonalEOE(user){
  const owner=localStorage.getItem(EOE_PERSONAL_OWNER_KEY)||"",same=!owner||owner===user.uid;if(owner&&owner!==user.uid){try{localStorage.setItem("eoe_backup_personal_"+owner,localStorage.getItem(EOE_PERSONAL_KEY)||"")}catch(e){}}
  const ref=window.cloudDb.collection("users").doc(user.uid).collection("appData").doc("personal");personalCloudRef=ref;
  try{const snap=await ref.get();if(personalCloudUid!==user.uid||personalCloudRef!==ref)return;const local=same?leerPersonalEOE():{notas:[],eventos:[],borradores:[]},remote=snap.exists?JSON.parse(snap.data()?.payload||'{"notas":[],"eventos":[],"borradores":[]}'):{notas:[],eventos:[],borradores:[]},merged=snap.exists?{notas:unirPersonalEOE(local.notas,remote.notas),eventos:unirPersonalEOE(local.eventos,remote.eventos),borradores:unirPersonalEOE(local.borradores,remote.borradores)}:local,payload=JSON.stringify(merged);localStorage.setItem(EOE_PERSONAL_KEY,payload);localStorage.setItem(EOE_PERSONAL_OWNER_KEY,user.uid);personalCloudLastPayload=payload;if(!snap.exists||payload!==(snap.data()?.payload||""))await ref.set({schemaVersion:1,payload,writerId:personalCloudDeviceId,updatedAt:new Date().toISOString()});if(personalCloudUid!==user.uid)return;personalCloudReady=true;
- personalCloudUnsubscribe=ref.onSnapshot(s=>{if(!s.exists)return;const data=s.data()||{},p=String(data.payload||"");if(!p||p===personalCloudLastPayload||personalCloudUid!==user.uid)return;if(data.writerId===personalCloudDeviceId){personalCloudLastPayload=p;return}try{localStorage.setItem(EOE_PERSONAL_KEY,p);personalCloudLastPayload=p;if(document.querySelector(".portal-subpage"))mostrarEspacioPersonalEOE()}catch(e){console.error("Firestore personal update:",e)}},e=>console.error("Firestore personal listener:",e));
+ personalCloudUnsubscribe=ref.onSnapshot(s=>{if(!s.exists)return;const data=s.data()||{},p=String(data.payload||"");if(!p||p===personalCloudLastPayload||personalCloudUid!==user.uid)return;if(data.writerId===personalCloudDeviceId){personalCloudLastPayload=p;return}try{localStorage.setItem(EOE_PERSONAL_KEY,p);personalCloudLastPayload=p;if(document.querySelector(".personal-calendar"))mostrarEspacioPersonalEOE()}catch(e){console.error("Firestore personal update:",e)}},e=>console.error("Firestore personal listener:",e));
  }catch(e){console.error("Firestore personal init:",e)}
 }
 function leerPortalEOE(){try{return JSON.parse(localStorage.getItem(EOE_PORTAL_KEY)||'{"nombre":"Mi espacio","instituciones":[]}')}catch(e){return {nombre:'Mi espacio',instituciones:[]}}}
@@ -1125,7 +1134,7 @@ function mostrarGuiaRecursos(){
 function filtrarGuia(){
  const box=document.getElementById("guia-lista");if(!box)return;
  const g=leerGuia(),q=(document.getElementById("guia-buscar")?.value||"").toLowerCase(),tipo=document.getElementById("guia-tipo")?.value||"Todos",amb=document.getElementById("guia-ambito")?.value||"Todos";
- const items=g.items.filter(x=>(x.nivel||"Primario"===db.nivelInstitucion ? (x.nivel||"Primario")===db.nivelInstitucion : false) || x.nivel==="Compartido").filter(x=>(tipo==="Todos"||x.tipo===tipo)&&(amb==="Todos"||x.ambito===amb)&&[x.titulo,x.descripcion,x.fuente,x.pagina,x.textoExtraido].join(" ").toLowerCase().includes(q));
+ const items=g.items.filter(x=>(x.nivel||"Primario"===db.nivelInstitucion ? (x.nivel||"Primario")===db.nivelInstitucion : false) || x.nivel==="Compartido").filter(x=>(tipo==="Todos"||x.tipo===tipo)&&(amb==="Todos"||x.ambito===amb)&&[x.titulo,x.descripcion,x.fuente,x.pagina,x.enlace,x.textoExtraido].join(" ").toLowerCase().includes(q));
  box.innerHTML=items.map(x=>`<div class="ficha-box" style="margin:12px 0"><div class="small">${esc(x.tipo)} · ${esc(x.ambito)}</div><h3>${esc(x.titulo)}</h3><p>${esc(x.descripcion)}</p><p class="small"><b>Fuente:</b> ${esc(x.fuente||"No especificada")}<br><b>Ubicación:</b> ${esc(x.pagina||"No especificada")}${x.enlace?`<br><b>Enlace:</b> <a href="${esc(x.enlace)}" target="_blank" rel="noopener">Abrir recurso</a>`:""}</p><button class="edit-btn" onclick="editarRecurso(${JSON.stringify(x.id)})">Editar</button><button class="del-btn" onclick="eliminarRecurso(${JSON.stringify(x.id)})">Eliminar</button></div>`).join("")||'<p class="small">No se encontraron recursos con esos filtros.</p>';
 }
 function formularioRecurso(id=null){
@@ -1876,62 +1885,7 @@ function abrirFicha(id,c,t){
     ).join("\n"):"Sin registros previos guardados.";
 
 
-    if(esCursoFlexible(c)){
-      const histFlex=hist;
-      const histHtmlFlex=histFlex.slice().reverse().map(r=>`
-        <div class="historial-tarjeta">
-          <b>📅 Fecha:</b> ${esc(r.f||"Sin fecha")}<br>
-          <b>📝 Actividad:</b> ${esc(r.a||"No especificada")}<br>
-          ${r.catObservada?`<b>🔤 Categoría observada:</b> ${esc(r.catObservada)}<br>`:""}
-          ${r.fortalezas?`<b>💪 Fortalezas:</b> ${esc(r.fortalezas)}<br>`:""}
-          ${r.dificultades?`<b>⚠️ Dificultades / necesidades:</b> ${esc(r.dificultades)}<br>`:""}
-          ${r.obsAbierta?`<b>💬 Observación:</b> ${esc(r.obsAbierta)}<br>`:""}
-          ${r.proximo?`<b>🎯 Próximo trabajo:</b> ${esc(r.proximo)}<br>`:""}
-        </div>`).join("");
-
-      document.getElementById("app").innerHTML=`
-        <h2>👤 ${esc(a.nombre)}</h2>
-        ${accionesCompartirAlumnoHTML(id,c,t,'regular')}
-        <div class="proximo">
-          <h3>🎯 PRÓXIMO ENCUENTRO</h3>
-          <textarea id="proximo-objetivo" placeholder="¿Qué querés trabajar en el próximo encuentro?">${esc(a.proximoObjetivo||"")}</textarea>
-          <button style="background:#f39c12" onclick="guardarProximoObjetivo(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar objetivo</button>
-        </div>
-        <div class="ficha-box">
-          <details class="compact-details profile-options"><summary>⚙️ Opciones del alumno</summary>
-          <label>Editar nombre</label>
-          <input id="nom" value="${esc(a.nombre)}">
-          <button onclick="guardarNombre(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar Nombre</button>
-          <button onclick="cambiarActivo(${jsArg(id)},${jsArg(c)},${jsArg(t)})" style="background:${a.activo===true?"#c0392b":"#27ae60"}">${a.activo===true?"🚫 Inactivar Alumno":"✅ Reincorporar Alumno"}</button>
-
-          <hr>
-          <label>🔤 Categoría de escritura observada</label>
-          <select id="flex-cat">
-            ${catOrder.map(x=>`<option value="${esc(x)}" ${a.cat===x?"selected":""}>${esc(catInfo[x][0])}</option>`).join("")}
-          </select>
-          </details>
-          <details class="compact-details registro-panel"><summary>＋ Registrar una intervención</summary>
-          <h3>📝 Nuevo Registro Abierto</h3>
-          <div class="seccion-formulario">
-            <label>Fecha</label><input type="date" id="flex-fecha" value="${new Date().toISOString().split("T")[0]}">
-            <label>Actividad realizada</label><textarea id="flex-actividad" placeholder="Describí brevemente la propuesta realizada..."></textarea>
-            <label>Fortalezas / avances observados</label><textarea id="flex-fortalezas" placeholder="¿Qué pudo hacer? ¿Qué avances observaste?"></textarea>
-            <label>Dificultades / necesidades</label><textarea id="flex-dificultades" placeholder="¿Qué dificultades o necesidades se observaron?"></textarea>
-            <label>Observación profesional</label><textarea id="flex-obs" placeholder="Registro abierto..."></textarea>
-            <label>🎯 Qué continuar trabajando</label><textarea id="flex-proximo" placeholder="Aspectos a retomar o fortalecer..."></textarea>
-            <button id="btn-flex" style="background:#27ae60" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)})">💾 Guardar y seguir con este alumno</button><button type="button" class="secondary-action" onclick="guardarRegistroFlexible(${jsArg(id)},${jsArg(c)},${jsArg(t)},true)">Guardar y volver al curso</button>
-          </div></details>
-          <button class="del-btn" onclick="eliminarAlumno(${jsArg(id)},${jsArg(c)},${jsArg(t)})">🗑️ Eliminar Alumno</button>
-          <button class="volver" onclick="verCats(${jsArg(c)},${jsArg(t)})">← Volver</button>
-        </div>
-        <details class="compact-details historial-panel"><summary>📜 Historial anterior — ${histFlex.length} registros</summary>
-        ${histHtmlFlex||'<p class="small">No hay registros todavía.</p>'}</details>
-      `;
-      insertarDocumentosAlumno(id,c,t,'regular');
-      return;
-    }
-
-    const informePrompt=`Redacta un informe profesional sobre el seguimiento educativo del alumno ${a.nombre}, curso ${c}, categoría inicial ${descCatActual}. No inventes información. Historial:\\n${historialTexto}`;
+    const informePrompt=    const informePrompt=`Redacta un informe profesional sobre el seguimiento educativo del alumno ${a.nombre}, curso ${c}, categoría inicial ${descCatActual}. No inventes información. Historial:\\n${historialTexto}`;
 
     const opcionesCats=catOrder.map(x=>`<option value="${esc(x)}" ${x===a.cat?"selected":""}>${esc(catInfo[x][0])}</option>`).join("");
 
@@ -1959,6 +1913,10 @@ function abrirFicha(id,c,t){
         <b>Apoyo:</b> ${esc(r.apoyo||"No registrado")}<br>
         <b>Evolución:</b> ${badge} ${esc(r.evolucion||"Se mantiene")}<br>
         ${cont?`<b>Continuar trabajando:</b> ${esc(cont)}<br>`:""}
+        ${r.fortalezas?`<b>Fortalezas / avances:</b> ${esc(r.fortalezas)}<br>`:""}
+        ${r.dificultades?`<b>Dificultades / necesidades:</b> ${esc(r.dificultades)}<br>`:""}
+        ${r.obsAbierta?`<b>Observación:</b> ${esc(r.obsAbierta)}<br>`:""}
+        ${r.proximo?`<b>Qué continuar trabajando:</b> ${esc(r.proximo)}<br>`:""}
         ${r.obsCompromiso?`<br><i>${esc(r.obsCompromiso)}</i>`:""}
       </div>`;
     }).join("");
